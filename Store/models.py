@@ -30,7 +30,7 @@ class Address(models.Model):
 # Customers
 class Customer(AbstractUser):
     phone = models.CharField(max_length=20, blank=True)
-    Address = models.ForeignKey(Address, on_delete=models.CASCADE)
+    Address = models.ForeignKey(Address, on_delete=models.CASCADE, null=True, blank=True)
 
 	    
 # Products
