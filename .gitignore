@@ -20,6 +20,7 @@ __pycache__/
 /staticfiles/
 /mediafiles/
 media/
+emails/
 
 # Ignore IDE and editor files
 .vscode/
