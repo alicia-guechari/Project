@@ -12,8 +12,8 @@ class ProductCreateSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class ProductListSerializer(serializers.ModelSerializer):
-    category = CategorySerializer(read_only=True)
+    category = serializers.ReadOnlyField(source='category.name')
 
     class Meta:
         model = Product
-        fields = ['id', 'name', 'price', 'category', 'description', 'image', 'stoke']
+        fields = '__all__'
