@@ -30,11 +30,12 @@ class Address(models.Model):
 # Customers
 class Customer(AbstractUser):
     phone = models.CharField(max_length=20, blank=True)
-    Address = models.ForeignKey(Address, on_delete=models.CASCADE, null=True, blank=True)
+    address = models.OneToOneField(Address, on_delete=models.CASCADE, null=True, blank=True)
 
 	    
 # Products
 class Product(models.Model):
+	name = models.CharField(max_length=100, unique=True)
 	name = models.CharField(max_length=100 , unique=True)
 	price = models.DecimalField(default=0, decimal_places=2, max_digits=6)
 	category = models.ForeignKey(Category, on_delete=models.CASCADE)
