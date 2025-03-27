@@ -1,9 +1,10 @@
+
 from rest_framework import status , viewsets
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 from .models import Order, OrderItem, Cart, CartItem, Address , Product
-from .Serializers import OrderSerializer , CartSerializer, CartItemSerializer
+from .serializers import OrderSerializer , CartSerializer, CartItemSerializer
 from django.db import transaction
 from rest_framework.decorators import action
 
@@ -208,3 +209,83 @@ class Cart(viewsets.ViewSet):
 
         CartItem.objects.filter(cart=cart).delete()
         return Response({"message": "Cart cleared successfully"}, status=status.HTTP_204_NO_CONTENT)
+
+from rest_framework import generics, permissions, filters
+from django_filters import rest_framework as django_filters
+from .models import *
+from .serializers import *
+from .permissions import IsOwnerOrAdmin
+
+# ---------------------------------------Product----------------------------------------------
+class ProductFilter(django_filters.FilterSet):
+    min_price = django_filters.NumberFilter(field_name="price", lookup_expr='gte')
+    max_price = django_filters.NumberFilter(field_name="price", lookup_expr='lte')
+    category = django_filters.CharFilter(field_name="category__name", lookup_expr='iexact')
+    in_stock = django_filters.BooleanFilter(field_name="stock", lookup_expr='gt', exclude=True)
+
+    class Meta:
+        model = Product
+        fields = ['min_price', 'max_price', 'category', 'in_stock']
+
+class ProductListCreateView(generics.ListCreateAPIView):
+    queryset = Product.objects.all()
+
+    def get_permissions(self):
+        if self.request.method == 'GET':
+            return []
+        return [permissions.IsAdminUser()]  
+
+    def get_serializer_class(self):
+        if self.request.method == 'GET':
+            return ProductListSerializer
+        return ProductCreateSerializer
+
+class ProductDetailView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Product.objects.all()
+
+    def get_permissions(self):
+        if self.request.method == 'GET':
+            return []
+        return [permissions.IsAdminUser()]  
+
+    def get_serializer_class(self):
+        if self.request.method == 'GET':
+            return ProductListSerializer
+        return ProductCreateSerializer
+
+class ProductSearchView(generics.ListAPIView):
+    queryset = Product.objects.select_related('category').all() # is just a performance optimization
+    serializer_class = ProductListSerializer
+    filter_backends = [django_filters.DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+    filterset_class = ProductFilter
+    search_fields = ['name', 'description', 'category__name']
+    ordering_fields = ['price', 'name']
+
+# ---------------------------------------Category----------------------------------------------for admin
+class CategoryView(generics.ListCreateAPIView):
+    queryset = Category.objects.all()
+    serializer_class = CategorySerializer
+    pagination_class = None
+    permission_classes = [permissions.IsAdminUser]
+
+class CategoryDetailView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Category.objects.all()
+    serializer_class = CategorySerializer
+    permission_classes = [permissions.IsAdminUser]
+
+# ---------------------------------------Address----------------------------------------------
+class AddressView(generics.ListCreateAPIView):
+    serializer_class = AddressSerializer
+    pagination_class = None
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        if self.request.user.is_staff:
+            return Address.objects.all()
+        return Address.objects.filter(user=self.request.user)
+
+class AddressDetailView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Address.objects.all()
+    serializer_class = AddressSerializer
+    permission_classes = [permissions.IsAuthenticated, IsOwnerOrAdmin]
+

@@ -1,5 +1,6 @@
 # Ignore Python cache and compiled files
 __pycache__/
+*.pyc
 *.py[cod]
 *$py.class
 
@@ -20,6 +21,7 @@ __pycache__/
 /staticfiles/
 /mediafiles/
 media/
+emails/
 
 # Ignore IDE and editor files
 .vscode/

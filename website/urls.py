@@ -32,3 +32,12 @@ urlpatterns = [
     path('cart/clear/', ClearCartView.as_view(), name='clear-cart'),
     path('', include(router.urls)) 
 ]
+
+from . import auth_urls
+
+urlpatterns = [
+    path('admin/', admin.site.urls),
+    path('auth/', include(auth_urls)),    
+    path('', include('Store.urls')),
+]
+
