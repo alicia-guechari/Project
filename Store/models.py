@@ -1,21 +1,20 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser # assuming dj's default user model
 
+# Customers
+class Customer(AbstractUser):
+    phone = models.CharField(max_length=15)
+
 # address of users
 class Address(models.Model):
+    user = models.ForeignKey(Customer, on_delete=models.CASCADE, related_name='addresses')
     country = models.CharField(max_length=100)
     city = models.CharField(max_length=100)
-    state = models.CharField(max_length=100, blank=True, null=True)
     street = models.CharField(max_length=100)
     postal_code = models.CharField(max_length=10)
 
     def __str__(self):
         return f"{self.street}, {self.city}, {self.country}"
-
-# Customers
-class Customer(AbstractUser):
-    phone = models.CharField(max_length=15, blank=True)
-    address = models.OneToOneField(Address, on_delete=models.CASCADE, null=True, blank=True)
 
 # Categories of Products
 class Category(models.Model):

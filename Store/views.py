@@ -2,6 +2,7 @@ from rest_framework import generics, permissions, filters
 from django_filters import rest_framework as django_filters
 from .models import *
 from .serializers import *
+from .permissions import IsOwnerOrAdmin
 
 # ---------------------------------------Product----------------------------------------------
 class ProductFilter(django_filters.FilterSet):
@@ -59,3 +60,19 @@ class CategoryDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
     permission_classes = [permissions.IsAdminUser]
+
+# ---------------------------------------Address----------------------------------------------
+class AddressView(generics.ListCreateAPIView):
+    serializer_class = AddressSerializer
+    pagination_class = None
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        if self.request.user.is_staff:
+            return Address.objects.all()
+        return Address.objects.filter(user=self.request.user)
+
+class AddressDetailView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Address.objects.all()
+    serializer_class = AddressSerializer
+    permission_classes = [permissions.IsAuthenticated, IsOwnerOrAdmin]
