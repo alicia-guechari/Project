@@ -17,14 +17,14 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from Store.views import OrderList, CartView, AddToCartView, UpdateCartItemView, RemoveCartItemView, ClearCartView, Cart
+from Store.views import *
 
 router = DefaultRouter()
 router.register(r'cart', Cart, basename='cart')
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('orders/', OrderList.as_view(), name='order-list'),
+   # path('orders/', OrderList.as_view(), name='order-list'),
     path("cart/", CartView.as_view(), name="cart"), 
     path("cart/add/", AddToCartView.as_view(), name="add_to_cart"),  
     path("cart/update/<int:item_id>/", UpdateCartItemView.as_view(), name="update_cart_item"), 

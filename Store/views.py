@@ -3,10 +3,13 @@ from rest_framework import status , viewsets
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
-from .models import Order, OrderItem, Cart, CartItem, Address , Product
-from .serializers import OrderSerializer , CartSerializer, CartItemSerializer
 from django.db import transaction
 from rest_framework.decorators import action
+from rest_framework import generics, permissions, filters
+from django_filters import rest_framework as django_filters
+from .models import *
+from .serializers import *
+from .permissions import IsOwnerOrAdmin
 
 # class OrderList(APIView):
 #     permission_classes = [IsAuthenticated]
@@ -210,13 +213,10 @@ class Cart(viewsets.ViewSet):
         CartItem.objects.filter(cart=cart).delete()
         return Response({"message": "Cart cleared successfully"}, status=status.HTTP_204_NO_CONTENT)
 
-from rest_framework import generics, permissions, filters
-from django_filters import rest_framework as django_filters
-from .models import *
-from .serializers import *
-from .permissions import IsOwnerOrAdmin
+
 
 # ---------------------------------------Product----------------------------------------------
+
 class ProductFilter(django_filters.FilterSet):
     min_price = django_filters.NumberFilter(field_name="price", lookup_expr='gte')
     max_price = django_filters.NumberFilter(field_name="price", lookup_expr='lte')
@@ -262,6 +262,7 @@ class ProductSearchView(generics.ListAPIView):
     ordering_fields = ['price', 'name']
 
 # ---------------------------------------Category----------------------------------------------for admin
+
 class CategoryView(generics.ListCreateAPIView):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
@@ -274,6 +275,7 @@ class CategoryDetailView(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = [permissions.IsAdminUser]
 
 # ---------------------------------------Address----------------------------------------------
+
 class AddressView(generics.ListCreateAPIView):
     serializer_class = AddressSerializer
     pagination_class = None
