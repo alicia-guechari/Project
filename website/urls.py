@@ -16,28 +16,11 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
-from rest_framework.routers import DefaultRouter
-from Store.views import *
-
-router = DefaultRouter()
-router.register(r'cart', Cart, basename='cart')
-
-urlpatterns = [
-    path('admin/', admin.site.urls),
-   # path('orders/', OrderList.as_view(), name='order-list'),
-    path("cart/", CartView.as_view(), name="cart"), 
-    path("cart/add/", AddToCartView.as_view(), name="add_to_cart"),  
-    path("cart/update/<int:item_id>/", UpdateCartItemView.as_view(), name="update_cart_item"), 
-    path("cart/remove/<int:item_id>/", RemoveCartItemView.as_view(), name="remove_cart_item"),  
-    path('cart/clear/', ClearCartView.as_view(), name='clear-cart'),
-    path('', include(router.urls)) 
-]
-
 from . import auth_urls
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('auth/', include(auth_urls)),    
-    path('', include('Store.urls')),
+    path('Store/', include('Store.urls')),
 ]
 
