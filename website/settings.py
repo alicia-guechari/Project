@@ -38,7 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     # Auth
-    'rest_framework',
+    #'rest_framework', this will cuz a problem cuz it's duplicated 
     'rest_framework.authtoken',
     'dj_rest_auth',
 
@@ -51,6 +51,8 @@ INSTALLED_APPS = [
     'Store',
     'rest_framework',
     'django_filters',
+    # PcRental
+    'pc_rental',
 
 ]
 
