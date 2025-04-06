@@ -3,10 +3,10 @@ from .views import *
 from rest_framework.routers import DefaultRouter # this if we use the cart viewset
 
 router = DefaultRouter()
-router.register(r'cart', Cart, basename='cart')
+router.register(r'cart', Cartviewset, basename='cart')
 
 urlpatterns = [
-    path('products/', ProductListCreateView.as_view()),
+    path('product/', ProductListCreateView.as_view()),
     path('products/<int:pk>/', ProductDetailView.as_view()),
     path('products/search/', ProductSearchView.as_view()),
 
@@ -21,6 +21,6 @@ urlpatterns = [
     path("cart/update/<int:item_id>/", UpdateCartItemView.as_view(), name="update_cart_item"), 
     path("cart/remove/<int:item_id>/", RemoveCartItemView.as_view(), name="remove_cart_item"),  
     path('cart/clear/', ClearCartView.as_view(), name='clear-cart'),
-    path('', include(router.urls))
+    #path('', include(router.urls))
 ]
 

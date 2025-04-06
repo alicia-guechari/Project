@@ -37,7 +37,7 @@ class CartItemSerializer(serializers.ModelSerializer):
 
 
 class CartSerializer(serializers.ModelSerializer):
-    items = CartItemSerializer(source="cartitem_set", many=True, read_only=True)
+    items = CartItemSerializer( many=True, read_only=True)
     total_price = serializers.SerializerMethodField()
 
     class Meta:
@@ -46,7 +46,7 @@ class CartSerializer(serializers.ModelSerializer):
         read_only_fields = ["user"] 
 
     def get_total_price(self, obj):
-        return sum(item.subtotal for item in obj.cartitem_set.all())
+        return sum(item.subtotal for item in obj.items.all())
 
 # ************************************************Order*******************************************************
 

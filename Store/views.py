@@ -161,7 +161,7 @@ class ClearCartView(APIView):
 
 #                    ******************************************************************************
 
-class Cart(viewsets.ViewSet):
+class Cartviewset(viewsets.ViewSet):
     permission_classes = [IsAuthenticated]
 
     def list(self, request):
