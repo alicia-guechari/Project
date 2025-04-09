@@ -1,10 +1,9 @@
 
 from rest_framework import status , viewsets
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 from rest_framework.decorators import action, api_view, permission_classes
-from rest_framework import generics, mixins, permissions, filters
+from rest_framework import generics, permissions, filters
 from django_filters import rest_framework as django_filters
 from .models import *
 from .serializers import *
@@ -14,7 +13,7 @@ from django.shortcuts import get_object_or_404
 
 
 # class OrderList(APIView):
-#     permission_classes = [IsAuthenticated]
+#     permission_classes = [Permissions.IsAuthenticated]
 
 #     def get(self, request):
 #         """Retrieve all orders for an admin or only the user's orders."""
@@ -27,7 +26,7 @@ from django.shortcuts import get_object_or_404
 #         return Response(serializer.data)
 
 # class OrderCreateView(APIView): #Inherits from APIView → This means it will handle HTTP requests (here it's post)
-#     permission_classes = [IsAuthenticated]
+#     permission_classes = [Permissions.IsAuthenticated]
 
 #     @transaction.atomic  # Ensures all DB operations are either completed or rolled back, if anything fails, all changes to the database are undone
 #     def post(self, request):
@@ -83,7 +82,7 @@ from django.shortcuts import get_object_or_404
 
 
 # class CartView(APIView):
-#     permission_classes = [IsAuthenticated]
+#     permission_classes = [Permissions.IsAuthenticated]
 
 #     def get(self, request):
 #         """Retrieve the cart of the logged-in user."""
@@ -92,7 +91,7 @@ from django.shortcuts import get_object_or_404
 #         return Response(serializer.data)
 
 # class AddToCartView(APIView):
-#     permission_classes = [IsAuthenticated]
+#     permission_classes = [Permissions.IsAuthenticated]
 
 #     def post(self, request):
 #         """Add a product to the cart or update its quantity."""
@@ -116,7 +115,7 @@ from django.shortcuts import get_object_or_404
 #         return Response({"message": "Item added to cart"}, status=status.HTTP_201_CREATED)
 
 # class UpdateCartItemView(APIView):
-#     permission_classes = [IsAuthenticated]
+#     permission_classes = [Permissions.IsAuthenticated]
 
 #     def patch(self, request, item_id):
 #         """Update the quantity of an item in the cart."""
@@ -135,7 +134,7 @@ from django.shortcuts import get_object_or_404
 #         return Response({"message": "Cart item updated"}, status=status.HTTP_200_OK)
 
 # class RemoveCartItemView(APIView):
-#     permission_classes = [IsAuthenticated]
+#     permission_classes = [Permissions.IsAuthenticated]
 
 #     def delete(self, request, item_id):
 #         """Remove an item from the cart."""
@@ -147,7 +146,7 @@ from django.shortcuts import get_object_or_404
 #             return Response({"error": "Item not found in cart"}, status=status.HTTP_404_NOT_FOUND)
 
 # class ClearCartView(APIView):
-#     permission_classes = [IsAuthenticated]
+#     permission_classes = [Permissions.IsAuthenticated]
 
 #     def deleteCart(self, request):
 #         """Remove all items from the user's cart."""
@@ -164,7 +163,7 @@ from django.shortcuts import get_object_or_404
 # #                    ******************************************************************************
 
 # class Cartt(viewsets.ViewSet):
-#     permission_classes = [IsAuthenticated]
+#     permission_classes = [Permissions.IsAuthenticated]
 
 #     def list(self, request):
 #         """Retrieve all cart items for the authenticated user."""
@@ -291,7 +290,7 @@ class AddressView(generics.ListCreateAPIView):
 class AddressDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Address.objects.all()
     serializer_class = AddressSerializer
-    permission_classes = [permissions.IsAuthenticated, IsOwnerOrAdmin]
+    permission_classes = [permissions.IsAuthenticated]
 
 # ---------------------------------------Order----------------------------------------------
 
@@ -304,7 +303,7 @@ class AddressDetailView(generics.RetrieveUpdateDestroyAPIView):
 # chargily = ChargilyClient(key, secret, CHARGILIY_TEST_URL)
     
 @api_view(['POST'])
-@permission_classes([IsAuthenticated])
+@permission_classes([permissions.IsAuthenticated])
 def checkout(request):
     user = request.user
     cart = get_object_or_404(Cart, user=user)
@@ -327,3 +326,23 @@ def checkout(request):
     cart.items.all().delete()
 
     return Response({'message': 'Order created successfully'})
+
+class ListOrderView(generics.ListAPIView):
+    serializer_class = OrderSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        if self.request.user.is_staff:
+            return Order.objects.all()
+        return Order.objects.filter(user=self.request.user)
+
+class RetriveUpdateDeleteOrderView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Order.objects.all()
+    serializer_class = OrderSerializer
+    
+    def get_permissions(self):
+        if self.request.method == 'DELETE':
+            return [permissions.IsAuthenticated]
+        return [permissions.IsAdminUser]
+    
+
