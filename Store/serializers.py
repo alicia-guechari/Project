@@ -59,9 +59,9 @@ class OrderItemSerializer(serializers.ModelSerializer):
  
 class OrderSerializer(serializers.ModelSerializer): # this is a nested serialization
     items = OrderItemSerializer(many=True, read_only=True)  # Show order items
-    customer = serializers.ReadOnlyField(source='customer.email')  # Show customer email instead of its id
+    user = serializers.ReadOnlyField(source='customer.email')  # Show customer email instead of its id
 
     class Meta:
         model = Order
-        fields = ['id', 'customer', 'total_price', 'status', 'created_at', 'items']
+        fields = ['user', 'total_price', 'status', 'created_at', 'items']
 
