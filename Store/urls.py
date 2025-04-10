@@ -6,12 +6,12 @@ router = DefaultRouter()
 router.register(r'cart', Cart, basename='cart')
 
 urlpatterns = [
-    path('products/', ProductListCreateView.as_view()),
-    path('products/<int:pk>/', ProductDetailView.as_view()),
-    path('products/search/', ProductSearchView.as_view()),
+    path('product/', ProductListCreateView.as_view()),
+    path('product/<int:pk>/', ProductDetailView.as_view()),
+    path('product/search/', ProductSearchView.as_view()),
 
-    path('categories/', CategoryView.as_view()),
-    path('categories/<int:pk>/', CategoryDetailView.as_view()),
+    path('category/', CategoryView.as_view()),
+    path('category/<int:pk>/', CategoryManagerView.as_view()),
 
     path('address/', AddressView.as_view()),
     path('address/<int:pk>/', AddressDetailView.as_view()),
@@ -23,6 +23,8 @@ urlpatterns = [
     # path('cart/clear/', ClearCartView.as_view(), name='clear-cart'),
     # path('', include(router.urls)),
 
+    path("order/", ListOrderView.as_view()),
+    path("order/<int:pk>/", OrderManagerView.as_view()),
     path("order/checkout", checkout),
 ]
 

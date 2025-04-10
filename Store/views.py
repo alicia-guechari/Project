@@ -270,7 +270,7 @@ class CategoryView(generics.ListCreateAPIView):
     pagination_class = None
     permission_classes = [permissions.IsAdminUser]
 
-class CategoryDetailView(generics.RetrieveUpdateDestroyAPIView):
+class CategoryManagerView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
     permission_classes = [permissions.IsAdminUser]
@@ -301,7 +301,7 @@ class AddressDetailView(generics.RetrieveUpdateDestroyAPIView):
 # key="chargilly-key"
 # secret="chargily-secret"
 # chargily = ChargilyClient(key, secret, CHARGILIY_TEST_URL)
-    
+
 @api_view(['POST'])
 @permission_classes([permissions.IsAuthenticated])
 def checkout(request):
@@ -336,13 +336,13 @@ class ListOrderView(generics.ListAPIView):
             return Order.objects.all()
         return Order.objects.filter(user=self.request.user)
 
-class RetriveUpdateDeleteOrderView(generics.RetrieveUpdateDestroyAPIView):
+class OrderManagerView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Order.objects.all()
     serializer_class = OrderSerializer
     
     def get_permissions(self):
-        if self.request.method == 'DELETE':
-            return [permissions.IsAuthenticated]
+        if self.request.method in ['DELETE', 'GET']:
+            return [permissions.IsAuthenticated, IsOwnerOrAdmin]
         return [permissions.IsAdminUser]
     
 
