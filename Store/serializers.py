@@ -6,7 +6,7 @@ class CategorySerializer(serializers.ModelSerializer):
         model = Category
         fields = '__all__'
 
-class ProductCreateSerializer(serializers.ModelSerializer):
+class ProductSerializer(serializers.ModelSerializer):
     class Meta:
         model = Product
         fields = '__all__'
@@ -26,27 +26,15 @@ class AddressSerializer(serializers.ModelSerializer):
 # ************************************************Cart*******************************************************
 
 class CartItemSerializer(serializers.ModelSerializer):
-    product_name = serializers.CharField(source="product.name", read_only=True) #read-only means clients can see the product name but cannot modify it.
-    product_price = serializers.DecimalField(source="product.price", max_digits=10, decimal_places=2, read_only=True)
-    subtotal = serializers.DecimalField(max_digits=10, decimal_places=2, read_only=True)
-
+    product = ProductSerializer()
     class Meta:
         model = CartItem
-        fields = ["id", "cart", "product", "product_name", "product_price", "quantity", "subtotal"]
-        read_only_fields = ["cart", "subtotal"]
+        fields = '__all__'
 
-
-class CartSerializer(serializers.ModelSerializer):
-    items = CartItemSerializer(source="cartitem_set", many=True, read_only=True)
-    total_price = serializers.SerializerMethodField()
-
+class CartItemInputSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Cart
-        fields = ["id", "user", "items", "total_price"]
-        read_only_fields = ["user"] 
-
-    def get_total_price(self, obj):
-        return sum(item.subtotal for item in obj.cartitem_set.all())
+        model = CartItem
+        fields = ['product', 'quantity', 'cart']
 
 # ************************************************Order*******************************************************
 

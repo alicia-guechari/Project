@@ -39,15 +39,26 @@ class ListCartItemsView(generics.ListAPIView):
 
     def get_queryset(self):
         cart = Cart.objects.filter(user=self.request.user).first()
-        if not cart:
-            return Response({'error':'cart is empty'})
         return CartItem.objects.filter(cart=cart)
 
 class CartItemManagerView(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = [permissions.IsAuthenticated, IsOwnerOrAdmin]
-    serializer_class = CartItemSerializer
     queryset = CartItem.objects.all()
 
+    def get_serializer_class(self, *args, **kwargs):
+        if self.request.method in ['PUT', 'PATCH']:
+            return CartItemInputSerializer
+        return CartItemSerializer
+
+class ClearCartView(APIView):
+    parser_classes = [permissions.IsAuthenticated]
+
+    def delete(self, request):
+        cart = Cart.objects.filter(user=request.user).first()
+        if cart:
+            CartItem.objects.filter(cart=cart).delete()
+
+        return Response({"message": "Cart cleared successfully"}, status=status.HTTP_204_NO_CONTENT)
 
 # ---------------------------------------Product----------------------------------------------
 
@@ -72,7 +83,7 @@ class ProductListCreateView(generics.ListCreateAPIView):
     def get_serializer_class(self):
         if self.request.method == 'GET':
             return ProductListSerializer
-        return ProductCreateSerializer
+        return ProductSerializer
 
 class ProductDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Product.objects.all()
@@ -85,7 +96,7 @@ class ProductDetailView(generics.RetrieveUpdateDestroyAPIView):
     def get_serializer_class(self):
         if self.request.method == 'GET':
             return ProductListSerializer
-        return ProductCreateSerializer
+        return ProductSerializer
 
 class ProductSearchView(generics.ListAPIView):
     queryset = Product.objects.select_related('category').all() # is just a performance optimization
