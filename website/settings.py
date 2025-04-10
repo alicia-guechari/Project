@@ -83,21 +83,16 @@ REST_FRAMEWORK = {
     'ORDERING_PARAM': 'ordering',
 }
 
-# ACCOUNT_AUTHENTICATION_METHOD = "email"
-# ACCOUNT_EMAIL_REQUIRED = True
-# ACCOUNT_USERNAME_REQUIRED = False
-# ACCOUNT_EMAIL_VERIFICATION = "optional"
-
-# if os.getenv('DEBUG')=='True':
-#     EMAIL_BACKEND = 'django.core.mail.backends.filebased.EmailBackend'
-#     EMAIL_FILE_PATH = os.path.join(BASE_DIR, 'emails')
-# else:
-#     EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-#     EMAIL_HOST = os.getenv('EMAIL_HOST')
-#     EMAIL_PORT = int(os.getenv('EMAIL_PORT', 587))
-#     EMAIL_USE_TLS = os.getenv('EMAIL_USE_TLS', 'True') == 'True'
-#     EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
-#     EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
+if os.getenv('DEBUG')=='True':
+    EMAIL_BACKEND = 'django.core.mail.backends.filebased.EmailBackend'
+    EMAIL_FILE_PATH = os.path.join(BASE_DIR, 'emails')
+else:
+    EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+    EMAIL_HOST = os.getenv('EMAIL_HOST')
+    EMAIL_PORT = int(os.getenv('EMAIL_PORT', 587))
+    EMAIL_USE_TLS = os.getenv('EMAIL_USE_TLS', 'True') == 'True'
+    EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
+    EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
 
 MIDDLEWARE = [
     'allauth.account.middleware.AccountMiddleware',  #  Required for django-allauth
