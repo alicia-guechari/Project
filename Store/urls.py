@@ -20,5 +20,7 @@ urlpatterns = [
     path("order/", ListOrderView.as_view()),
     path("order/<int:pk>/", OrderManagerView.as_view()),
     path("order/checkout", checkout),
+
+    path('chargily/', chargilyCheckout),
 ]
 

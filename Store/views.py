@@ -1,4 +1,3 @@
-
 from rest_framework import status, generics, permissions, filters
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -8,8 +7,6 @@ from django_filters import rest_framework as django_filters
 from .models import *
 from .serializers import *
 from .permissions import IsOwnerOrAdmin
-
-    # @transaction.atomic 
 
 
 class AddToCartView(APIView):
@@ -140,28 +137,23 @@ class AddressDetailView(generics.RetrieveUpdateDestroyAPIView):
 # ---------------------------------------Order----------------------------------------------
 
 
-# from chargily_pay.api import ChargilyClient
-# from chargily_pay.settings import CHARGILIY_TEST_URL
-# from website import settings
+from chargily_pay.api import ChargilyClient
+from chargily_pay.settings import CHARGILIY_TEST_URL
+from chargily_pay.entity import Checkout
+from website import settings
 
-# key=settings.CHARGILI_PUBLIC_KEY
-# secret=settings.CHARGILI_SECRET_KEY
-# chargily = ChargilyClient(key, secret, CHARGILIY_TEST_URL)
+chargily = ChargilyClient(settings.CHARGILI_PUBLIC_KEY, settings.CHARGILI_SECRET_KEY, CHARGILIY_TEST_URL)
 
-# from chargily_pay.entity import Checkout
-
-# @api_view(['POST'])
-# def chargilii(request):
-#     response = chargily.create_checkout(
-#         Checkout(
-#             success_url='http://google.com/',
-#             failure_url='http://youtube.com/',
-#             amount=100,
-#             currency='dzd',
-#             # payment_method='edahabia',
-#             locale='en',
-#         ))
-#     return Response({'message':'checkouted', 'response':response})
+@api_view(['POST'])
+def chargilyCheckout(request):
+    response = chargily.create_checkout(
+        Checkout(
+            success_url='http://google.com/',
+            amount=540,
+            currency='dzd',
+            locale='en',
+        ))
+    return Response({'message':'checkouted', 'response':response})
 
 @api_view(['POST'])
 @permission_classes([permissions.IsAuthenticated])

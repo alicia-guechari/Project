@@ -177,3 +177,7 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+
+CHARGILI_PUBLIC_KEY = os.getenv('CHARGILI_PUBLIC_KEY')
+CHARGILI_SECRET_KEY = os.getenv('CHARGILI_SECRET_KEY')
