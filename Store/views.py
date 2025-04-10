@@ -36,6 +36,7 @@ class AddToCartView(APIView):
 class ListCartItemsView(generics.ListAPIView):
     permission_classes = [permissions.IsAuthenticated]
     serializer_class = CartItemSerializer
+    pagination_class = None
 
     def get_queryset(self):
         cart = Cart.objects.filter(user=self.request.user).first()
@@ -197,12 +198,17 @@ class ListOrderView(generics.ListAPIView):
         return Order.objects.filter(user=self.request.user)
 
 class OrderManagerView(generics.RetrieveUpdateDestroyAPIView):
-    queryset = Order.objects.all()
-    serializer_class = OrderSerializer
+    def get_queryset(self):
+        if self.request.user.is_staff:
+            return Order.objects.all()
+        return Order.objects.filter(user=self.request.user)    
     
+    def get_serializer_class(self):
+        if self.request.method == 'GET':
+            return OrderDetailSerializer
+        return OrderSerializer
+
     def get_permissions(self):
         if self.request.method in ['DELETE', 'GET']:
-            return [permissions.IsAuthenticated, IsOwnerOrAdmin]
-        return [permissions.IsAdminUser]
-    
-
+            return [permissions.IsAuthenticated()]
+        return [permissions.IsAdminUser()]

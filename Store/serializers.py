@@ -39,17 +39,19 @@ class CartItemInputSerializer(serializers.ModelSerializer):
 # ************************************************Order*******************************************************
 
 class OrderItemSerializer(serializers.ModelSerializer):
-    product_name = serializers.ReadOnlyField(source='product.name')  # Show product name in response
+    product = ProductSerializer()
 
     class Meta:
         model = OrderItem
-        fields = ['id', 'product', 'product_name', 'quantity', 'subtotal']
+        fields = ['id', 'product', 'quantity', 'subtotal']
  
-class OrderSerializer(serializers.ModelSerializer): # this is a nested serialization
-    items = OrderItemSerializer(many=True, read_only=True)  # Show order items
-    user = serializers.ReadOnlyField(source='customer.email')  # Show customer email instead of its id
-
+class OrderSerializer(serializers.ModelSerializer):
     class Meta:
         model = Order
-        fields = ['user', 'total_price', 'status', 'created_at', 'items']
+        fields = ['id', 'total_price', 'status', 'created_at']
 
+class OrderDetailSerializer(serializers.ModelSerializer):
+    items = OrderItemSerializer(many=True)
+    class Meta:
+        model = Order
+        fields = ['id', 'total_price', 'status', 'created_at', 'items']
