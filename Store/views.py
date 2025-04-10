@@ -1,219 +1,62 @@
-
-from rest_framework import status , viewsets
+from rest_framework import status, generics, permissions, filters
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
-from django.db import transaction
-from rest_framework.decorators import action
-from rest_framework import generics, permissions, filters
+from rest_framework.decorators import api_view, permission_classes
+from django.shortcuts import get_object_or_404
 from django_filters import rest_framework as django_filters
 from .models import *
 from .serializers import *
 from .permissions import IsOwnerOrAdmin
 
-# class OrderList(APIView):
-#     permission_classes = [IsAuthenticated]
-
-#     def get(self, request):
-#         """Retrieve all orders for an admin or only the user's orders."""
-#         if request.user.is_staff:
-#             orders = Order.objects.all()  # Admin sees all orders
-#         else:
-#             orders = Order.objects.filter(customer=request.user)  # Customers see only their orders
-        
-#         serializer = OrderSerializer(orders, many=True) # many cuz of many orders to serial
-#         return Response(serializer.data)
-
-# class OrderCreateView(APIView): #Inherits from APIView → This means it will handle HTTP requests (here it's post)
-#     permission_classes = [IsAuthenticated]
-
-#     @transaction.atomic  # Ensures all DB operations are either completed or rolled back, if anything fails, all changes to the database are undone
-#     def post(self, request):
-#         """Create an order from the customer's cart."""
-#         customer = request.user #Retrieves the authenticated user (who is placing the order).
-#         cart = Cart.objects.filter(customer=customer).first() #first() ensures we get one cart (if it exists) else val=None
-
-#         if not cart: #If the customer doesn't have a cart,
-#             return Response({'error': 'Cart is empty'}, status=status.HTTP_400_BAD_REQUEST)
-
-#         cart_items = CartItem.objects.filter(cart=cart) #Fetches all items in the customer's cart.
-
-#         if not cart_items.exists(): #If there are no items in the cart
-#             return Response({'error': 'No items in the cart'}, status=status.HTTP_400_BAD_REQUEST)
-
-#         total_price = sum(item.product.price * item.quantity for item in cart_items)
- 
-#         # Get address from request
-#         address_id = request.data.get('address_id')  # Expecting address_id in request body
-#         address = Address.objects.filter(id=address_id, customer=customer).first()
-
-#         if not address:
-#             return Response({'error': 'Invalid or missing address'}, status=status.HTTP_400_BAD_REQUEST)
-
-#         # Create Order
-#         order = Order.objects.create(customer=customer, total_price=total_price)
-
-#         # Create OrderItems
-#         for item in cart_items:
-#             OrderItem.objects.create(
-#                 order=order,
-#                 product=item.product,
-#                 quantity=item.quantity,
-#                 price=item.product.price  # Save price at the time of order
-#             )
-#             # Reduce stock (optional)
-#             # item.product.stock -= item.quantity
-#             # item.product.save()
-
-#         # Clear cart after checkout
-#         cart_items.delete()
-
-#         serializer = OrderSerializer(order)
-#         return Response(serializer.data, status=status.HTTP_201_CREATED)
-
-#                      ************************************
-# the cart : 
-
-# Retrieving the cart (GET)
-# Adding an item to the cart (POST)
-# Updating the quantity of an item (PATCH)
-# Removing an item from the cart (DELETE)
-
-
-class CartView(APIView):
-    permission_classes = [IsAuthenticated]
-
-    def get(self, request):
-        """Retrieve the cart of the logged-in user."""
-        cart, created = Cart.objects.get_or_create(user=request.user)
-        serializer = CartSerializer(cart)
-        return Response(serializer.data)
 
 class AddToCartView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request):
-        """Add a product to the cart or update its quantity."""
         cart, created = Cart.objects.get_or_create(user=request.user)
         product_id = request.data.get("product_id")
         quantity = int(request.data.get("quantity", 1))
 
-        try:
-            product = Product.objects.get(id=product_id)
-        except Product.DoesNotExist:
+        product = Product.objects.filter(id=product_id).first()
+        if not product:
             return Response({"error": "Product not found"}, status=status.HTTP_404_NOT_FOUND)
 
         cart_item, created = CartItem.objects.get_or_create(cart=cart, product=product)
-        
         if not created:
-            cart_item.quantity += quantity  # Increase quantity if already exists
+            cart_item.quantity += quantity
         else:
-            cart_item.quantity = quantity  # Set quantity for new item
+            cart_item.quantity = quantity
         
         cart_item.save()
-        return Response({"message": "Item added to cart"}, status=status.HTTP_201_CREATED)
+        return Response({"message": "item added to cart"}, status=status.HTTP_201_CREATED)
 
-class UpdateCartItemView(APIView):
-    permission_classes = [IsAuthenticated]
+class ListCartItemsView(generics.ListAPIView):
+    permission_classes = [permissions.IsAuthenticated]
+    serializer_class = CartItemSerializer
+    pagination_class = None
 
-    def patch(self, request, item_id):
-        """Update the quantity of an item in the cart."""
-        try:
-            cart_item = CartItem.objects.get(id=item_id, cart__user=request.user)
-        except CartItem.DoesNotExist:
-            return Response({"error": "Item not found in cart"}, status=status.HTTP_404_NOT_FOUND)
+    def get_queryset(self):
+        cart = Cart.objects.filter(user=self.request.user).first()
+        return CartItem.objects.filter(cart=cart)
 
-        quantity = int(request.data.get("quantity", 1))
-        if quantity <= 0:
-            cart_item.delete()  # Remove item if quantity is 0
-            return Response({"message": "Item removed from cart"}, status=status.HTTP_204_NO_CONTENT)
+class CartItemManagerView(generics.RetrieveUpdateDestroyAPIView):
+    permission_classes = [permissions.IsAuthenticated, IsOwnerOrAdmin]
+    queryset = CartItem.objects.all()
 
-        cart_item.quantity = quantity
-        cart_item.save()
-        return Response({"message": "Cart item updated"}, status=status.HTTP_200_OK)
-
-class RemoveCartItemView(APIView):
-    permission_classes = [IsAuthenticated]
-
-    def delete(self, request, item_id):
-        """Remove an item from the cart."""
-        try:
-            cart_item = CartItem.objects.get(id=item_id, cart__user=request.user)
-            cart_item.delete()
-            return Response({"message": "Item removed from cart"}, status=status.HTTP_204_NO_CONTENT)
-        except CartItem.DoesNotExist:
-            return Response({"error": "Item not found in cart"}, status=status.HTTP_404_NOT_FOUND)
+    def get_serializer_class(self, *args, **kwargs):
+        if self.request.method in ['PUT', 'PATCH']:
+            return CartItemInputSerializer
+        return CartItemSerializer
 
 class ClearCartView(APIView):
-    permission_classes = [IsAuthenticated]
+    parser_classes = [permissions.IsAuthenticated]
 
-    def deleteCart(self, request):
-        """Remove all items from the user's cart."""
+    def delete(self, request):
         cart = Cart.objects.filter(user=request.user).first()
-
-        if not cart:
-            return Response({"error": "Cart not found"}, status=status.HTTP_404_NOT_FOUND)
-
-        # Delete all cart items
-        CartItem.objects.filter(cart=cart).delete()
+        if cart:
+            CartItem.objects.filter(cart=cart).delete()
 
         return Response({"message": "Cart cleared successfully"}, status=status.HTTP_204_NO_CONTENT)
-
-#                    ******************************************************************************
-
-class Cartviewset(viewsets.ViewSet):
-    permission_classes = [IsAuthenticated]
-
-    def list(self, request):
-        """Retrieve all cart items for the authenticated user."""
-        cart = Cart.objects.filter(user=request.user).first()
-        if not cart:
-            return Response({"error": "Cart not found"}, status=status.HTTP_404_NOT_FOUND)
-        
-        cart_items = CartItem.objects.filter(cart=cart)
-        serializer = CartItemSerializer(cart_items, many=True)
-        return Response(serializer.data)
-
-    def create(self, request):
-        """Add an item to the cart."""
-        cart, created = Cart.objects.get_or_create(user=request.user)
-        product_id = request.data.get("product_id")
-        quantity = int(request.data.get("quantity", 1))
-
-        if not product_id:
-            return Response({"error": "Product ID is required"}, status=status.HTTP_400_BAD_REQUEST)
-
-        try:
-            product = Product.objects.get(id=product_id)
-        except Product.DoesNotExist:
-            return Response({"error": "Product not found"}, status=status.HTTP_404_NOT_FOUND)
-
-        cart_item, created = CartItem.objects.get_or_create(cart=cart, product=product)
-        cart_item.quantity += quantity
-        cart_item.save()
-
-        return Response(CartItemSerializer(cart_item).data, status=status.HTTP_201_CREATED)
-
-    def delete(self, request, pk=None):
-        """Remove a specific item from the cart."""
-        try:
-            cart_item = CartItem.objects.get(id=pk, cart__user=request.user)
-            cart_item.delete()
-            return Response({"message": "Item removed"}, status=status.HTTP_204_NO_CONTENT)
-        except CartItem.DoesNotExist:
-            return Response({"error": "Item not found"}, status=status.HTTP_404_NOT_FOUND)
-
-    @action(detail=False, methods=["delete"]) #This specifies that this action only accepts DELETE requests.
-    def clear(self, request):
-        """Custom action: Clear all cart items."""
-        cart = Cart.objects.filter(user=request.user).first()
-        if not cart:
-            return Response({"error": "Cart not found"}, status=status.HTTP_404_NOT_FOUND)
-
-        CartItem.objects.filter(cart=cart).delete()
-        return Response({"message": "Cart cleared successfully"}, status=status.HTTP_204_NO_CONTENT)
-
-
 
 # ---------------------------------------Product----------------------------------------------
 
@@ -238,7 +81,7 @@ class ProductListCreateView(generics.ListCreateAPIView):
     def get_serializer_class(self):
         if self.request.method == 'GET':
             return ProductListSerializer
-        return ProductCreateSerializer
+        return ProductSerializer
 
 class ProductDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Product.objects.all()
@@ -251,7 +94,7 @@ class ProductDetailView(generics.RetrieveUpdateDestroyAPIView):
     def get_serializer_class(self):
         if self.request.method == 'GET':
             return ProductListSerializer
-        return ProductCreateSerializer
+        return ProductSerializer
 
 class ProductSearchView(generics.ListAPIView):
     queryset = Product.objects.select_related('category').all() # is just a performance optimization
@@ -269,7 +112,7 @@ class CategoryView(generics.ListCreateAPIView):
     pagination_class = None
     permission_classes = [permissions.IsAdminUser]
 
-class CategoryDetailView(generics.RetrieveUpdateDestroyAPIView):
+class CategoryManagerView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
     permission_classes = [permissions.IsAdminUser]
@@ -289,5 +132,75 @@ class AddressView(generics.ListCreateAPIView):
 class AddressDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Address.objects.all()
     serializer_class = AddressSerializer
-    permission_classes = [permissions.IsAuthenticated, IsOwnerOrAdmin]
+    permission_classes = [permissions.IsAuthenticated]
 
+# ---------------------------------------Order----------------------------------------------
+
+
+from chargily_pay.api import ChargilyClient
+from chargily_pay.settings import CHARGILIY_TEST_URL
+from chargily_pay.entity import Checkout
+from website import settings
+
+chargily = ChargilyClient(settings.CHARGILI_PUBLIC_KEY, settings.CHARGILI_SECRET_KEY, CHARGILIY_TEST_URL)
+
+@api_view(['POST'])
+def chargilyCheckout(request):
+    response = chargily.create_checkout(
+        Checkout(
+            success_url='http://google.com/',
+            amount=540,
+            currency='dzd',
+            locale='en',
+        ))
+    return Response({'message':'checkouted', 'response':response})
+
+@api_view(['POST'])
+@permission_classes([permissions.IsAuthenticated])
+def checkout(request):
+    user = request.user
+    cart = get_object_or_404(Cart, user=user)
+    address = request.data.get('address')
+
+    if not cart.items.exists():
+        return Response({'error': 'cart is empty'}, status=400)
+
+    total = cart.total_price()
+    
+    order = Order.objects.create(user=user, total_price=total, address=address)
+
+    for item in cart.items.all():
+        OrderItem.objects.create(
+            order=order,
+            product=item.product,
+            quantity=item.quantity,
+        )
+
+    cart.items.all().delete()
+
+    return Response({'message': 'Order created successfully'})
+
+class ListOrderView(generics.ListAPIView):
+    serializer_class = OrderSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        if self.request.user.is_staff:
+            return Order.objects.all()
+        return Order.objects.filter(user=self.request.user)
+
+class OrderManagerView(generics.RetrieveUpdateDestroyAPIView):
+    def get_queryset(self):
+        if self.request.user.is_staff:
+            return Order.objects.all()
+        return Order.objects.filter(user=self.request.user)    
+    
+    def get_serializer_class(self):
+        if self.request.method == 'GET':
+            return OrderDetailSerializer
+        return OrderSerializer
+
+    def get_permissions(self):
+        if self.request.method in ['DELETE', 'GET']:
+            return [permissions.IsAuthenticated()]
+        return [permissions.IsAdminUser()]
