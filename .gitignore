@@ -13,6 +13,7 @@ __pycache__/
 *.pem
 
 # Ignore database files
+db.sqlite3
 *.sqlite3
 *.db
 *.sql
