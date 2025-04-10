@@ -33,6 +33,22 @@ class AddToCartView(APIView):
         cart_item.save()
         return Response({"message": "item added to cart"}, status=status.HTTP_201_CREATED)
 
+class ListCartItemsView(generics.ListAPIView):
+    permission_classes = [permissions.IsAuthenticated]
+    serializer_class = CartItemSerializer
+
+    def get_queryset(self):
+        cart = Cart.objects.filter(user=self.request.user).first()
+        if not cart:
+            return Response({'error':'cart is empty'})
+        return CartItem.objects.filter(cart=cart)
+
+class CartItemManagerView(generics.RetrieveUpdateDestroyAPIView):
+    permission_classes = [permissions.IsAuthenticated, IsOwnerOrAdmin]
+    serializer_class = CartItemSerializer
+    queryset = CartItem.objects.all()
+
+
 # ---------------------------------------Product----------------------------------------------
 
 class ProductFilter(django_filters.FilterSet):
