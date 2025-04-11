@@ -20,23 +20,9 @@ load_dotenv()
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# # SECURITY WARNING: don't run with debug turned on in production!
-# ALLOWED_HOSTS = []
-
-# SECRET_KEY = os.getenv('SECRET_KEY', 'fallback-secret-key')
-# DEBUG = os.getenv('DEBUG', 'False') == 'True'
-# ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '*').split(',')
-
-
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-51-)#*^&_kp#o2g)2f#k1u2%@vt#$2u_19z&lrx%&l^xf(srk$'
-
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
-
-ALLOWED_HOSTS = []
-
-
+SECRET_KEY = os.getenv('SECRET_KEY', 'fallback-secret-key')
+DEBUG = os.getenv('DEBUG', 'False') == 'True'
+ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '*').split(',')
 
 # Application definition
 
@@ -48,7 +34,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     # Auth
-    #'rest_framework', this will cuz a problem cuz it's duplicated 
+    'rest_framework',
     'rest_framework.authtoken',
     'dj_rest_auth',
 
@@ -59,7 +45,6 @@ INSTALLED_APPS = [
     'dj_rest_auth.registration',
     # My App
     'Store',
-    'rest_framework',
     'django_filters',
     # PcRental
     'pc_rental',
