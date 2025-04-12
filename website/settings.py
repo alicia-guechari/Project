@@ -23,18 +23,18 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # # SECURITY WARNING: don't run with debug turned on in production!
 # ALLOWED_HOSTS = []
 
-# SECRET_KEY = os.getenv('SECRET_KEY', 'fallback-secret-key')
-# DEBUG = os.getenv('DEBUG', 'False') == 'True'
-# ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '*').split(',')
+SECRET_KEY = os.getenv('SECRET_KEY', 'fallback-secret-key')
+DEBUG = os.getenv('DEBUG', 'False') == 'True'
+ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '*').split(',')
 
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-51-)#*^&_kp#o2g)2f#k1u2%@vt#$2u_19z&lrx%&l^xf(srk$'
+# SECRET_KEY = 'django-insecure-51-)#*^&_kp#o2g)2f#k1u2%@vt#$2u_19z&lrx%&l^xf(srk$'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+# DEBUG = False
 
-ALLOWED_HOSTS = []
+# ALLOWED_HOSTS = ['localhost', '127.0.0.1']
 
 
 
@@ -83,16 +83,18 @@ REST_FRAMEWORK = {
     'ORDERING_PARAM': 'ordering',
 }
 
-if os.getenv('DEBUG')=='True':
-    EMAIL_BACKEND = 'django.core.mail.backends.filebased.EmailBackend'
-    EMAIL_FILE_PATH = os.path.join(BASE_DIR, 'emails')
-else:
-    EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-    EMAIL_HOST = os.getenv('EMAIL_HOST')
-    EMAIL_PORT = int(os.getenv('EMAIL_PORT', 587))
-    EMAIL_USE_TLS = os.getenv('EMAIL_USE_TLS', 'True') == 'True'
-    EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
-    EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
+# if os.getenv('DEBUG')=='True':
+
+# EMAIL_BACKEND = 'django.core.mail.backends.filebased.EmailBackend'
+# EMAIL_FILE_PATH = os.path.join(BASE_DIR, 'emails')
+
+# else:
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = os.getenv('EMAIL_HOST')
+EMAIL_PORT = int(os.getenv('EMAIL_PORT', 587))
+EMAIL_USE_TLS = os.getenv('EMAIL_USE_TLS', 'True') == 'True'
+EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
 
 MIDDLEWARE = [
     'allauth.account.middleware.AccountMiddleware',  #  Required for django-allauth
