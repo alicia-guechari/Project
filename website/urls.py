@@ -24,7 +24,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('auth/', include(auth_urls)),    
     path('Store/', include('Store.urls')),
-    # path(' ', include('pc_rental.urls')),
+    path('rental/', include('pc_rental.urls')),
 ]
 
 if settings.DEBUG:

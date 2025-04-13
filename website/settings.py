@@ -83,8 +83,8 @@ REST_FRAMEWORK = {
 
 # if os.getenv('DEBUG')=='True':
 
-# EMAIL_BACKEND = 'django.core.mail.backends.filebased.EmailBackend'
-# EMAIL_FILE_PATH = os.path.join(BASE_DIR, 'emails')
+#  EMAIL_BACKEND = 'django.core.mail.backends.filebased.EmailBackend'
+#  EMAIL_FILE_PATH = os.path.join(BASE_DIR, 'emails')
 
 # else:
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
