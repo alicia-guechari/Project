@@ -1,6 +1,7 @@
 from django.db import models
 from django.conf import settings
 from django.db.models import Avg
+from datetime import datetime
 
 class PC(models.Model):
     name = models.CharField(max_length=100)  
@@ -34,6 +35,13 @@ class Rental(models.Model):
 
     def __str__(self):
         return f"{self.customer} rented {self.pc} on {self.rental_date}"
+    
+    
+    @property  # for calculating the duration of the rental
+    def days(self):
+        if self.return_date:
+            return (self.return_date - self.rental_date).days or 1
+        return (datetime.now() - self.rental_date).days or 1
 
 class RentalRequest(models.Model): # to approve the rental request by the admin
     customer = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)

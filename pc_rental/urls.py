@@ -1,11 +1,19 @@
-# from django.urls import path, include
-# from rest_framework.routers import DefaultRouter
-# from .views import PCViewSet  # Import your view
+from django.urls import path
+from .views import *
 
-# # Set up router for CRUD endpoints
-# router = DefaultRouter()
-# router.register(r"pcs", PCViewSet)  # This creates URLs like /api/pcs/
+urlpatterns = [
+    # PC management (admin only)
+    path('pcs/', PCListCreateView.as_view(), name='pc-list-create'),                   # GET, POST
+    path('pcs/<int:pk>/', PCManagerView.as_view(), name='pc-detail'),                  # GET, PUT, PATCH, DELETE
 
-# urlpatterns = [
-#     path("", include(router.urls)),  # Include router URLs
-# ]
+    # Rental
+    path('rent/', rent_pc, name='rent-pc'),                                            # POST
+    path('rentals/', ListRentalsView.as_view(), name='list-rentals'),                  # GET
+    path('rentals/<int:pk>/', RentalManagerView.as_view(), name='rental-detail'),      # GET, PUT, PATCH, DELETE
+
+    # Confirm return (admin only)
+    path('rentals/<int:rental_id>/confirm-return/', confirm_return, name='confirm-return'),  # POST
+
+    # Test checkout (for dev)
+    path('checkout/test/', chargilyCheckout, name='chargily-test-checkout'),           # POST
+]
