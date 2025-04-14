@@ -48,7 +48,9 @@ INSTALLED_APPS = [
     'django_filters',
     # PcRental
     'pc_rental',
-
+    
+    #nothing
+    'corsheaders',
 ]
 
 SITE_ID = 1
@@ -80,6 +82,9 @@ else:
     EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',  # add this near the top
+    'django.middleware.common.CommonMiddleware',
+    #
     'allauth.account.middleware.AccountMiddleware',  #  Required for django-allauth
 
     'django.middleware.security.SecurityMiddleware',
@@ -90,6 +95,10 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+
+CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOW_CREDENTIALS = True
+
 
 ROOT_URLCONF = 'website.urls'
 
@@ -162,6 +171,11 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 STATIC_ROOT = BASE_DIR / "staticfiles"
+
+# At the bottom of settings.py
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
+
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
