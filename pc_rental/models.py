@@ -1,7 +1,7 @@
 from django.db import models
 from django.conf import settings
 from django.db.models import Avg
-from datetime import datetime
+from django.utils import timezone
 
 class PC(models.Model):
     name = models.CharField(max_length=100)  
@@ -29,19 +29,23 @@ class Rental(models.Model):
     customer = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)  # Who is renting
     pc = models.ForeignKey(PC, on_delete=models.CASCADE)  # Which PC is rented
     rental_date = models.DateTimeField(auto_now_add=True)  # When the rental starts
-    return_date = models.DateTimeField(null=True, blank=True)  # When the PC is expected to be returned
-    total_price = models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True)  # Total rental cost
+    return_date = models.DateTimeField()  # When the PC is expected to be returned
+    total_price = models.DecimalField(max_digits=8, decimal_places=2, blank=True, editable=False)  # Total rental cost
     is_active = models.BooleanField(default=True)  # If the rental is ongoing
+
+    def save(self, *args, **kwargs):
+        if not self.pk:  # If this is a new rental
+            self.rental_date = timezone.now()  # Set rental_date to current time
+        
+        if self.return_date and self.rental_date:  # Only calculate if both dates exist
+            days = (self.return_date - self.rental_date).days
+            if days < 1:
+                days = 1
+            self.total_price = days * self.pc.price_per_day
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return f"{self.customer} rented {self.pc} on {self.rental_date}"
-    
-    
-    @property  # for calculating the duration of the rental
-    def days(self):
-        if self.return_date:
-            return (self.return_date - self.rental_date).days or 1
-        return (datetime.now() - self.rental_date).days or 1
 
 class RentalRequest(models.Model): # to approve the rental request by the admin
     customer = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)

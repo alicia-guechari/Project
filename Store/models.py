@@ -38,10 +38,10 @@ class Product(models.Model):
 
 # Orders
 class Order(models.Model):
-   # CHOICES =[('pending', 'Pending'),('shipped', 'Shipped'),('delivered', 'Delivered'),('cancelled', 'Cancelled'),]
+    CHOICES =[('pending', 'Pending'),('shipped', 'Shipped'),('delivered', 'Delivered'),('cancelled', 'Cancelled')]
 
     user = models.ForeignKey(Customer, on_delete=models.CASCADE , related_name='orders')
-    #status = models.CharField(max_length=20, choices=CHOICES, blank=True, default='pending')
+    status = models.CharField(max_length=20, choices=CHOICES, blank=True, default='pending')
     total_price = models.DecimalField(max_digits=10, decimal_places=2) #Stores the total cost of all items in the order, this is the total price of the order before taxes and shipping fees are applied
     address = models.ForeignKey(Address, on_delete=models.SET_NULL, null=True, blank=True) # the on_dele... ensures that the order won't be deleted id the addr is deleted
     created_at = models.DateTimeField(auto_now_add=True)
