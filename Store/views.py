@@ -6,7 +6,6 @@ from django.shortcuts import get_object_or_404
 from django_filters import rest_framework as django_filters
 from .models import *
 from .serializers import *
-from .permissions import IsOwnerOrAdmin
 
 
 class AddToCartView(APIView):
@@ -40,7 +39,7 @@ class ListCartItemsView(generics.ListAPIView):
         return CartItem.objects.filter(cart=cart)
 
 class CartItemManagerView(generics.RetrieveUpdateDestroyAPIView):
-    permission_classes = [permissions.IsAuthenticated, IsOwnerOrAdmin]
+    permission_classes = [permissions.IsAuthenticated]
     queryset = CartItem.objects.all()
 
     def get_serializer_class(self, *args, **kwargs):
@@ -57,19 +56,6 @@ class ClearCartView(APIView):
             CartItem.objects.filter(cart=cart).delete()
 
         return Response({"message": "Cart cleared successfully"}, status=status.HTTP_204_NO_CONTENT)
-
-class GetCartTotalView(APIView):
-    permission_classes = [permissions.IsAuthenticated]
-
-    def get(self, request):
-        cart = Cart.objects.filter(user=request.user).first()
-        if not cart:
-            return Response({"total": 0})
-
-        cart_items = CartItem.objects.filter(cart=cart)
-        total = sum(item.product.price * item.quantity for item in cart_items)
-        return Response({"total": total})
-
 
 # ---------------------------------------Product----------------------------------------------
 
@@ -203,11 +189,8 @@ class ListOrderView(generics.ListAPIView):
         return Order.objects.filter(user=self.request.user)
 
 class OrderManagerView(generics.RetrieveUpdateDestroyAPIView):
-    def get_queryset(self):
-        if self.request.user.is_staff:
-            return Order.objects.all()
-        return Order.objects.filter(user=self.request.user)    
-    
+    queryset = Order.objects.all()
+        
     def get_serializer_class(self):
         if self.request.method == 'GET':
             return OrderDetailSerializer
