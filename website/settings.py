@@ -68,9 +68,10 @@ INSTALLED_APPS = [
 
 SITE_ID = 1
 
+
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
-        'rest_framework.authentication.SessionAuthentication',
+        'rest_framework.authentication.TokenAuthentication',
     ),
     'DEFAULT_FILTER_BACKENDS': [
         'django_filters.rest_framework.DjangoFilterBackend',
@@ -97,11 +98,11 @@ EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
 
 MIDDLEWARE = [
-    'corsheaders.middleware.CorsMiddleware',  # add this near the top
+    'corsheaders.middleware.CorsMiddleware', # must be in the top
     'django.middleware.common.CommonMiddleware',
-    #
+    
     'allauth.account.middleware.AccountMiddleware',  #  Required for django-allauth
-
+    
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -111,8 +112,10 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-CORS_ALLOW_ALL_ORIGINS = True
-CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOWED_ORIGINS = ["http://localhost:3000"]
+CORS_TRUSTED_ORIGINS = ["http://localhost:3000"]
+
+
 
 
 ROOT_URLCONF = 'website.urls'
