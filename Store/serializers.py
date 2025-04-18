@@ -1,5 +1,11 @@
 from rest_framework import serializers
 from .models import *
+from dj_rest_auth.serializers import UserDetailsSerializer
+
+class CustomUserDetailsSerializer(UserDetailsSerializer):
+    class Meta(UserDetailsSerializer.Meta):
+        model = Customer
+        fields = UserDetailsSerializer.Meta.fields + ('phone',)
 
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:
@@ -22,6 +28,7 @@ class AddressSerializer(serializers.ModelSerializer):
     class Meta:
         model = Address
         fields = '__all__'
+        read_only_fields = ['user']
 
 # ************************************************Cart*******************************************************
 

@@ -84,6 +84,11 @@ REST_FRAMEWORK = {
     'ORDERING_PARAM': 'ordering',
 }
 
+REST_AUTH = {
+    'USER_DETAILS_SERIALIZER': 'Store.serializers.CustomUserDetailsSerializer',
+}
+
+
 # if os.getenv('DEBUG')=='True':
 
 #  EMAIL_BACKEND = 'django.core.mail.backends.filebased.EmailBackend'
@@ -99,7 +104,6 @@ EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
 
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware', # must be in the top
-    'django.middleware.common.CommonMiddleware',
     
     'allauth.account.middleware.AccountMiddleware',  #  Required for django-allauth
     

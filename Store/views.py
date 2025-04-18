@@ -109,7 +109,11 @@ class CategoryView(generics.ListCreateAPIView):   #list and create (admin only)
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
     pagination_class = None
-    permission_classes = [permissions.IsAdminUser]
+
+    def get_permissions(self):
+        if self.request.method == 'GET':
+            return []
+        return [permissions.IsAdminUser()]
 
 class CategoryManagerView(generics.RetrieveUpdateDestroyAPIView): # retrieving, updating, and deleting a single category.
     queryset = Category.objects.all()
@@ -127,6 +131,9 @@ class AddressView(generics.ListCreateAPIView):
         if self.request.user.is_staff:
             return Address.objects.all()
         return Address.objects.filter(user=self.request.user)
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
 
 class AddressDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Address.objects.all()
@@ -160,13 +167,16 @@ def checkout(request):
     user = request.user
     cart = get_object_or_404(Cart, user=user)
     address = request.data.get('address')
+    payement_method = request.data.get('payement_method')
 
     if not cart.items.exists():
         return Response({'error': 'cart is empty'}, status=400)
-
     total = cart.total_price()
-    
-    order = Order.objects.create(user=user, total_price=total, address=address)
+
+    if payement_method != 'cash':
+        # make e-payment
+        pass    
+    order = Order.objects.create(user=user, total_price=total, address=address, payement_method=payement_method)
 
     for item in cart.items.all():
         OrderItem.objects.create(
@@ -174,9 +184,7 @@ def checkout(request):
             product=item.product,
             quantity=item.quantity,
         )
-
     cart.items.all().delete()
-
     return Response({'message': 'Order created successfully'})
 
 class ListOrderView(generics.ListAPIView):

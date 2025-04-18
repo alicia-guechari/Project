@@ -9,11 +9,15 @@ from chargily_pay.api import ChargilyClient
 from chargily_pay.settings import CHARGILIY_TEST_URL
 from chargily_pay.entity import Checkout
 
-class PCListCreateView(generics.ListCreateAPIView): #listing all pcs and creating a new one
-    queryset = PC.objects.all()  # fetches all pcs from the DB
+class PCListCreateView(generics.ListCreateAPIView):
+    queryset = PC.objects.all() 
     serializer_class = PCSerializer 
-    pagination_class = None
-    permission_classes = [permissions.IsAdminUser] # only admins can acess this view
+
+    def get_permissions_class(self):
+        if self.request.method == 'GET':
+            print('==============================')
+            return []
+        return [permissions.IsAdminUser]
 
 class PCManagerView(generics.RetrieveUpdateDestroyAPIView): #Retrieving, updating, and deleting a single PC instance.
     queryset = PC.objects.all()
