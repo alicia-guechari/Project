@@ -11,21 +11,30 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
 from pathlib import Path
+from dotenv import load_dotenv
+import os
+
+# Load environment variables
+load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+# # SECURITY WARNING: don't run with debug turned on in production!
+# ALLOWED_HOSTS = []
+# DEBUG = False
 
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
+
+SECRET_KEY = os.getenv('SECRET_KEY', 'fallback-secret-key')
+DEBUG = os.getenv('DEBUG', 'False') == 'True'
+ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '*').split(',')
+
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-51-)#*^&_kp#o2g)2f#k1u2%@vt#$2u_19z&lrx%&l^xf(srk$'
+# SECRET_KEY = 'django-insecure-51-)#*^&_kp#o2g)2f#k1u2%@vt#$2u_19z&lrx%&l^xf(srk$'
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
 
-ALLOWED_HOSTS = []
+
 
 
 # Application definition
@@ -37,10 +46,67 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    # Auth
+    'rest_framework',
+    'rest_framework.authtoken',
+    'dj_rest_auth',
+
+    'django.contrib.sites',
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',
+    'dj_rest_auth.registration',
+    # My App
     'Store',
+    'django_filters',
+    # PcRental
+    'pc_rental',
+    
+    #nothing
+    'corsheaders',
 ]
 
+SITE_ID = 1
+
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework.authentication.TokenAuthentication',
+    ),
+    'DEFAULT_FILTER_BACKENDS': [
+        'django_filters.rest_framework.DjangoFilterBackend',
+        'rest_framework.filters.SearchFilter',
+        'rest_framework.filters.OrderingFilter',
+    ],
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 20,
+    'SEARCH_PARAM': 'q',
+    'ORDERING_PARAM': 'ordering',
+}
+
+REST_AUTH = {
+    'USER_DETAILS_SERIALIZER': 'Store.serializers.CustomUserDetailsSerializer',
+}
+
+
+# if os.getenv('DEBUG')=='True':
+
+#  EMAIL_BACKEND = 'django.core.mail.backends.filebased.EmailBackend'
+#  EMAIL_FILE_PATH = os.path.join(BASE_DIR, 'emails')
+
+# else:
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = os.getenv('EMAIL_HOST')
+EMAIL_PORT = int(os.getenv('EMAIL_PORT', 587))
+EMAIL_USE_TLS = os.getenv('EMAIL_USE_TLS', 'True') == 'True'
+EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
+
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware', # must be in the top
+    
+    'allauth.account.middleware.AccountMiddleware',  #  Required for django-allauth
+    
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -49,6 +115,12 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+
+CORS_ALLOWED_ORIGINS = ["http://localhost:3000"]
+CORS_TRUSTED_ORIGINS = ["http://localhost:3000"]
+
+
+
 
 ROOT_URLCONF = 'website.urls'
 
@@ -67,6 +139,8 @@ TEMPLATES = [
         },
     },
 ]
+
+AUTH_USER_MODEL='Store.Customer'
 
 WSGI_APPLICATION = 'website.wsgi.application'
 
@@ -118,8 +192,18 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
 STATIC_URL = 'static/'
+STATIC_ROOT = BASE_DIR / "staticfiles"
+
+# At the bottom of settings.py
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
+
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+
+CHARGILI_PUBLIC_KEY = os.getenv('CHARGILI_PUBLIC_KEY')
+CHARGILI_SECRET_KEY = os.getenv('CHARGILI_SECRET_KEY')

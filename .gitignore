@@ -1,0 +1,80 @@
+# Ignore Python cache and compiled files
+__pycache__/
+*.pyc
+*.py[cod]
+*$py.class
+
+# Ignore Django settings and secrets
+/settings/local.py
+/settings/development.py
+/settings/production.py
+*.env
+*.key
+*.pem
+
+# Ignore database files
+db.sqlite3
+*.sqlite3
+*.db
+*.sql
+
+# Ignore static and media files (if not versioned)
+/staticfiles/
+/mediafiles/
+media/
+emails/
+
+# Ignore IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*.sublime-workspace
+*.sublime-project
+
+# Ignore log files
+*.log
+logs/
+
+# Ignore coverage reports
+.coverage
+htmlcov/
+
+# Ignore pipenv and poetry files
+Pipfile
+Pipfile.lock
+poetry.lock
+pyproject.toml
+
+# Ignore macOS specific files
+.DS_Store
+
+# Ignore pytest cache
+.pytest_cache/
+
+# Ignore Jupyter Notebook files
+*.ipynb
+.ipynb_checkpoints/
+
+# Ignore Celery files
+celerybeat-schedule
+celerybeat.pid
+
+# Ignore npm and Node.js files
+node_modules/
+npm-debug.log*
+
+# Ignore build and distribution files
+build/
+dist/
+*.egg-info/
+*.egg
+*.whl
+
+# Ignore pytest cache
+.pytest_cache/
+
+# Ignore other unnecessary files
+*.bak
+*.tmp
+*.temp
