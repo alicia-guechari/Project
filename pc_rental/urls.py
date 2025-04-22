@@ -13,7 +13,4 @@ urlpatterns = [
 
     # Confirm return (admin only)
     path('rentals/confirm-return/<int:rental_id>/', confirm_return, name='confirm-return'),  # POST
-
-    # Test checkout (for dev)
-    path('checkout/test/', chargilyCheckout, name='chargily-test-checkout'),           # POST
 ]

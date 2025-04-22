@@ -144,17 +144,17 @@ class AddressDetailView(generics.RetrieveUpdateDestroyAPIView):
 
 
 from chargily_pay.api import ChargilyClient
-from chargily_pay.settings import CHARGILIY_TEST_URL
+from chargily_pay.settings import CHARGILIY_TEST_URL, CHARGILIY_URL
 from chargily_pay.entity import Checkout
 from website import settings
 
-chargily = ChargilyClient(settings.CHARGILI_PUBLIC_KEY, settings.CHARGILI_SECRET_KEY, CHARGILIY_TEST_URL)
+chargily = ChargilyClient(settings.CHARGILI_PUBLIC_KEY, settings.CHARGILI_SECRET_KEY, CHARGILIY_URL)
 
 @api_view(['POST'])
 def chargilyCheckout(request):
     response = chargily.create_checkout(
         Checkout(
-            success_url='http://google.com/',
+            success_url='http://localhost:8000/store/order/' ,
             amount=540,
             currency='dzd',
             locale='en',

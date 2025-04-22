@@ -26,12 +26,15 @@ class PC(models.Model):
 
 
 class Rental(models.Model):
-    customer = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)  # Who is renting
+    PAYEMENT_CHOICES = [('cash', 'Cash'), ('cib', 'CIB'), ('edahabia', 'Edahabia')]
+
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)  # Who is renting
     pc = models.ForeignKey(PC, on_delete=models.CASCADE)  # Which PC is rented
     rental_date = models.DateTimeField(auto_now_add=True)  # When the rental starts
     return_date = models.DateTimeField()  # When the PC is expected to be returned
     total_price = models.DecimalField(max_digits=8, decimal_places=2, blank=True, editable=False)  # Total rental cost
     is_active = models.BooleanField(default=True)  # If the rental is ongoing
+    payement_method = models.CharField(max_length=10, choices=PAYEMENT_CHOICES, default='cash')  # How the rental is paid
 
     def save(self, *args, **kwargs):
         if not self.pk:  # If this is a new rental
@@ -45,7 +48,7 @@ class Rental(models.Model):
         super().save(*args, **kwargs)
 
     def __str__(self):
-        return f"{self.customer} rented {self.pc} on {self.rental_date}"
+        return f"{self.user} rented {self.pc} on {self.rental_date}"
 
 class RentalRequest(models.Model): # to approve the rental request by the admin
     customer = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)

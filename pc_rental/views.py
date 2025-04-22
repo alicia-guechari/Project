@@ -8,6 +8,7 @@ from django.shortcuts import get_object_or_404
 from chargily_pay.api import ChargilyClient
 from chargily_pay.settings import CHARGILIY_TEST_URL
 from chargily_pay.entity import Checkout
+from website import settings
 
 class PCListCreateView(generics.ListCreateAPIView):
     queryset = PC.objects.all() 
@@ -68,7 +69,7 @@ def rent_pc(request):
         return Response({'error': 'pc is reserved'})
     pc.is_available = False
 
-    serializer.save()
+    serializer.save(user=request.user)
     pc.save()
 
     # # Create Chargily Checkout    # ***** chat suggested this , i don't know about is *****
@@ -88,7 +89,6 @@ def rent_pc(request):
 
     return Response({'message': 'PC rented successfully'}, status=status.HTTP_201_CREATED)
 
-
 class ListRentalsView(generics.ListAPIView):
     serializer_class = RentalSerializer
     permission_classes = [permissions.IsAuthenticated]
@@ -96,7 +96,7 @@ class ListRentalsView(generics.ListAPIView):
     def get_queryset(self):
         if self.request.user.is_staff:
             return Rental.objects.all()
-        return Rental.objects.filter(customer=self.request.user)
+        return Rental.objects.filter(user=self.request.user)
 
 class RentalManagerView(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = [permissions.IsAuthenticated]
@@ -105,7 +105,7 @@ class RentalManagerView(generics.RetrieveUpdateDestroyAPIView):
     def get_queryset(self):
         if self.request.user.is_staff:
             return Rental.objects.all()
-        return Rental.objects.filter(customer=self.request.user)
+        return Rental.objects.filter(user=self.request.user)
 
 @api_view(['POST'])
 @permission_classes([permissions.IsAdminUser])
