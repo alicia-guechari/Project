@@ -227,6 +227,6 @@ CHARGILI_PUBLIC_KEY = os.getenv('CHARGILI_PUBLIC_KEY')
 CHARGILI_SECRET_KEY = os.getenv('CHARGILI_SECRET_KEY')
 
 
-ALLOWED_HOSTS = ['https://gearbyte.onrender.com/']
+ALLOWED_HOSTS = ['gearbyte.onrender.com', 'localhost', '127.0.0.1']
 
 print("DATABASE_URL:", os.getenv("DATABASE_URL"))
