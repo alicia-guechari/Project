@@ -13,6 +13,8 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 from pathlib import Path
 from dotenv import load_dotenv
 import os
+import dj_database_url
+
 
 # Load environment variables
 load_dotenv()
@@ -25,9 +27,13 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # DEBUG = False
 
 
-SECRET_KEY = os.getenv('SECRET_KEY', 'fallback-secret-key')
-DEBUG = os.getenv('DEBUG', 'False') == 'True'
-ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '*').split(',')
+# SECRET_KEY = os.getenv('SECRET_KEY', 'fallback-secret-key')
+# DEBUG = os.getenv('DEBUG', 'False') == 'True'
+# ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '*').split(',')
+
+SECRET_KEY = os.environ.get("SECRET_KEY", "fallback-secret-key")
+
+DEBUG = os.environ.get("DEBUG", "") != "False"
 
 
 # SECURITY WARNING: keep the secret key used in production secret!
@@ -148,11 +154,23 @@ WSGI_APPLICATION = 'website.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME': BASE_DIR / 'db.sqlite3',
+#     }
+# }
+
+# DATABASES = {
+#     'default': dj_database_url.config(default=os.environ.get('DATABASE_URL'))
+# }
+
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
+    'default': dj_database_url.config(
+        default=os.getenv('DATABASE_URL'),  # or paste the string here directly
+        conn_max_age=600,
+        ssl_require=True  # Force SSL for Render connection
+    )
 }
 
 
@@ -191,7 +209,7 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
 # At the bottom of settings.py
@@ -207,3 +225,8 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 CHARGILI_PUBLIC_KEY = os.getenv('CHARGILI_PUBLIC_KEY')
 CHARGILI_SECRET_KEY = os.getenv('CHARGILI_SECRET_KEY')
+
+
+ALLOWED_HOSTS = ['https://gearbyte.onrender.com/']
+
+print("DATABASE_URL:", os.getenv("DATABASE_URL"))
