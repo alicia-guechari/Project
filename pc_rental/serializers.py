@@ -10,7 +10,7 @@ class RentalSerializer(serializers.ModelSerializer):
     class Meta:
         model = Rental
         fields = '__all__'
-        read_only_fields = ['customer', 'rental_date', 'total_price', 'is_active']
+        read_only_fields = ['rental_date', 'total_price', 'is_active']
 
 class RentalRequestSerializer(serializers.ModelSerializer):
     class Meta:

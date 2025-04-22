@@ -12,7 +12,7 @@ urlpatterns = [
     path('rentals/<int:pk>/', RentalManagerView.as_view(), name='rental-detail'),      # GET, PUT, PATCH, DELETE
 
     # Confirm return (admin only)
-    path('rentals/<int:rental_id>/confirm-return/', confirm_return, name='confirm-return'),  # POST
+    path('rentals/confirm-return/<int:rental_id>/', confirm_return, name='confirm-return'),  # POST
 
     # Test checkout (for dev)
     path('checkout/test/', chargilyCheckout, name='chargily-test-checkout'),           # POST

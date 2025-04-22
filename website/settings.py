@@ -67,14 +67,17 @@ INSTALLED_APPS = [
     'django_filters',
     # PcRental
     'pc_rental',
-
+    
+    #nothing
+    'corsheaders',
 ]
 
 SITE_ID = 1
 
+
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
-        'rest_framework.authentication.SessionAuthentication',
+        'rest_framework.authentication.TokenAuthentication',
     ),
     'DEFAULT_FILTER_BACKENDS': [
         'django_filters.rest_framework.DjangoFilterBackend',
@@ -86,6 +89,11 @@ REST_FRAMEWORK = {
     'SEARCH_PARAM': 'q',
     'ORDERING_PARAM': 'ordering',
 }
+
+REST_AUTH = {
+    'USER_DETAILS_SERIALIZER': 'Store.serializers.CustomUserDetailsSerializer',
+}
+
 
 # if os.getenv('DEBUG')=='True':
 
@@ -101,8 +109,10 @@ EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware', # must be in the top
+    
     'allauth.account.middleware.AccountMiddleware',  #  Required for django-allauth
-
+    
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -111,6 +121,12 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+
+CORS_ALLOWED_ORIGINS = ["http://localhost:3000"]
+CORS_TRUSTED_ORIGINS = ["http://localhost:3000"]
+
+
+
 
 ROOT_URLCONF = 'website.urls'
 
@@ -195,6 +211,11 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 STATIC_ROOT = BASE_DIR / "staticfiles"
+
+# At the bottom of settings.py
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
+
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field

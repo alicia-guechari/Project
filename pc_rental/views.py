@@ -4,18 +4,20 @@ from .serializers import *
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
-from decimal import Decimal
-from datetime import timedelta, datetime
+
 from chargily_pay.api import ChargilyClient
 from chargily_pay.settings import CHARGILIY_TEST_URL
 from chargily_pay.entity import Checkout
-from website import settings
 
-class PCListCreateView(generics.ListCreateAPIView): #listing all pcs and creating a new one
-    queryset = PC.objects.all()  # fetches all pcs from the DB
+class PCListCreateView(generics.ListCreateAPIView):
+    queryset = PC.objects.all() 
     serializer_class = PCSerializer 
-    pagination_class = None
-    permission_classes = [permissions.IsAdminUser] # only admins can acess this view
+
+    def get_permissions_class(self):
+        if self.request.method == 'GET':
+            print('==============================')
+            return []
+        return [permissions.IsAdminUser]
 
 class PCManagerView(generics.RetrieveUpdateDestroyAPIView): #Retrieving, updating, and deleting a single PC instance.
     queryset = PC.objects.all()
@@ -40,26 +42,33 @@ def chargilyCheckout(request):
 @api_view(['POST'])
 @permission_classes([permissions.IsAuthenticated])
 def rent_pc(request):
-    user = request.user
-    pc_id = request.data.get('pc_id')
-    days = int(request.data.get('days', 1))
+    # user = request.user
+    # pc_id = request.data.get('pc_id')
+    # days = int(request.data.get('days', 1))
 
-    pc = get_object_or_404(PC, id=pc_id)
+    # pc = get_object_or_404(PC, id=pc_id)
 
+    # if not pc.is_available:
+    #     return Response({'error': 'PC is not available'}, status=400)
+
+    # total_price = pc.price_per_day * Decimal(days)
+    # return_date = datetime.now() + timedelta(days=days)
+
+    # Rental.objects.create(
+    #     customer=serializer.validated_data['customer'],
+    #     pc=serializer.validated_data['pc'],
+    #     return_date=serializer.validated_data['return_date'],
+    # )
+    serializer = RentalSerializer(data=request.data)
+    serializer.is_valid(raise_exception=True)
+
+    pc = serializer.validated_data['pc']
+    # pc = PC.objects.filter(pk=serializer.validated_data['pc']).first()
     if not pc.is_available:
-        return Response({'error': 'PC is not available'}, status=400)
-
-    total_price = pc.price_per_day * Decimal(days)
-    return_date = datetime.now() + timedelta(days=days)
-
-    rental = Rental.objects.create(
-        customer=user,
-        pc=pc,
-        return_date=return_date,
-        total_price=total_price
-    )
-    
+        return Response({'error': 'pc is reserved'})
     pc.is_available = False
+
+    serializer.save()
     pc.save()
 
     # # Create Chargily Checkout    # ***** chat suggested this , i don't know about is *****
@@ -77,8 +86,7 @@ def rent_pc(request):
     #     'payment_link': response['checkout_url']
     # })
 
-    
-    return Response({'message': 'PC rented successfully'})
+    return Response({'message': 'PC rented successfully'}, status=status.HTTP_201_CREATED)
 
 
 class ListRentalsView(generics.ListAPIView):
