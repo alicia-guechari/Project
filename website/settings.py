@@ -209,7 +209,7 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
 # At the bottom of settings.py
@@ -227,6 +227,6 @@ CHARGILI_PUBLIC_KEY = os.getenv('CHARGILI_PUBLIC_KEY')
 CHARGILI_SECRET_KEY = os.getenv('CHARGILI_SECRET_KEY')
 
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = ['https://gearbyte.onrender.com/']
 
 print("DATABASE_URL:", os.getenv("DATABASE_URL"))
