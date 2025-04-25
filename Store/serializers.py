@@ -50,12 +50,23 @@ class OrderItemSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = OrderItem
-        fields = ['id', 'product', 'quantity', 'subtotal']
+        fields = ['product', 'quantity', 'subtotal']
  
 class OrderSerializer(serializers.ModelSerializer):
+    address = AddressSerializer()
+    user = serializers.SerializerMethodField()
+
+    def get_user(self, obj):
+        return {
+            'username' : obj.user.username,
+            'email' : obj.user.email,
+            'phone' : obj.user.phone,
+        }
+
     class Meta:
         model = Order
-        fields = ['id', 'total_price', 'status', 'created_at']
+        fields = '__all__'
+        read_only_fields = ['user', 'created_at', 'total_price']
 
 class OrderDetailSerializer(serializers.ModelSerializer):
     items = OrderItemSerializer(many=True)
