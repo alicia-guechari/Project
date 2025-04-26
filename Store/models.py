@@ -19,7 +19,7 @@ class Address(models.Model):
 # Categories of Products
 class Category(models.Model):
 	name = models.CharField(max_length=100 , unique=True) # unique ensures that no categ can have the same name
-	icon = models.ImageField(upload_to='media/category/', blank=True, null=True)
+	icon = models.ImageField(upload_to='media/category/')
 	description = models.CharField(max_length=250,blank=True, null=True) # charfield is for short txt like names , txtfield is for long txt like descrp
 
 	def __str__(self):
@@ -31,7 +31,7 @@ class Product(models.Model):
 	description = models.CharField(max_length=250, blank=True, null=True )
 	price = models.DecimalField(decimal_places=2, max_digits=6)
 	category = models.ForeignKey(Category, on_delete=models.CASCADE)
-	image = models.ImageField(upload_to='media/product/', blank=True, null=True)
+	image = models.ImageField(upload_to='media/product/')
 	stock = models.PositiveIntegerField()
 
 	def __str__(self):

@@ -5,7 +5,7 @@ from dj_rest_auth.serializers import UserDetailsSerializer
 class CustomUserDetailsSerializer(UserDetailsSerializer):
     class Meta(UserDetailsSerializer.Meta):
         model = Customer
-        fields = UserDetailsSerializer.Meta.fields + ('phone',)
+        fields = UserDetailsSerializer.Meta.fields + ('phone', 'is_staff',)
 
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:

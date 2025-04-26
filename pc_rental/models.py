@@ -5,17 +5,17 @@ from django.utils import timezone
 
 class PC(models.Model):
     name = models.CharField(max_length=100)  
-    brand = models.CharField(max_length=50, blank=True, null=True) 
+    brand = models.CharField(max_length=50) 
     cpu = models.CharField(max_length=100)  
     ram = models.PositiveIntegerField(help_text="RAM size in GB")  
     storage = models.CharField(max_length=100)  # ex: "512GB SSD + 1TB HDD"
     gpu = models.CharField(max_length=100, blank=True, null=True)  
     display_size = models.DecimalField(max_digits=4, decimal_places=1, blank=True, null=True, help_text="Display size in inches")  
     operating_system = models.CharField(max_length=50, blank=True, null=True) 
-    description = models.TextField(blank=True, null=True)  
+    description = models.TextField()  
     price_per_day = models.DecimalField(max_digits=6, decimal_places=2, help_text="Rental price per day in USD") 
-    is_available = models.BooleanField(default=True)  
-    image = models.ImageField(upload_to="pc_images/", blank=True, null=True)  
+    is_available = models.BooleanField(blank=True, default=True)
+    image = models.ImageField(upload_to="pc_images/")
 
     def __str__(self):
         return f"{self.name} ({self.cpu}, {self.ram}GB RAM , {self.storage}GB)"
