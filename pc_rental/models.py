@@ -28,13 +28,11 @@ class PC(models.Model):
 
 class Rental(models.Model):
     PAYEMENT_CHOICES = [('cash', 'Cash'), ('cib', 'CIB'), ('edahabia', 'Edahabia')]
-    # STATUS_CHOICES = [("pending", "Pending"), ("approved", "Approved"), ("rejected", "Rejected")]
 
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     pc = models.ForeignKey(PC, on_delete=models.CASCADE)
-    # status = models.CharField( max_length=10, choices=STATUS_CHOICES, default="pending")
-    rental_date = models.DateTimeField()
-    return_date = models.DateTimeField()
+    rental_date = models.DateField()
+    return_date = models.DateField()
     total_price = models.DecimalField(max_digits=8, decimal_places=2, blank=True, editable=False)
     is_active = models.BooleanField(default=True)
     payement_method = models.CharField(max_length=10, choices=PAYEMENT_CHOICES)
@@ -47,7 +45,7 @@ class Rental(models.Model):
         super().save(*args, **kwargs)
 
     def __str__(self):
-        return f"{self.user} rented {self.pc} ({self.status})"
+        return f"{self.user} rented {self.pc}"
 
 class Review(models.Model):
     customer = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)  # Who is reviewing
