@@ -7,8 +7,12 @@ from django_filters import rest_framework as django_filters
 from .models import *
 from .serializers import *
 
-from django.db.models import Sum, Count
-
+import os
+from django.db.models import Sum
+import pandas as pd
+from rest_framework.parsers import MultiPartParser, FormParser
+from django.core.files.storage import default_storage
+from django.core.files.base import ContentFile
 
 
 class AddToCartView(APIView):
@@ -242,3 +246,117 @@ class SiteStatisticsView(APIView):
         }
         return Response(statistics)
 
+
+class BulkProductUploadView(APIView):
+    parser_classes = [MultiPartParser, FormParser]
+    permission_classes = [permissions.IsAdminUser]
+    
+    def post(self, request):
+        if 'sheet' not in request.FILES:
+            return Response({'error': 'No sheet file provided'}, status=status.HTTP_400_BAD_REQUEST)
+            
+        sheet_file = request.FILES['sheet']        
+        if not sheet_file.name.endswith(('.xlsx', '.xls', '.csv')):
+            return Response({'error': 'Unsupported sheet format. Please upload .xlsx, .xls, or .csv file'}, 
+                           status=status.HTTP_400_BAD_REQUEST)
+        
+        image_files = {}
+        for key, file in request.FILES.items():
+            if key != 'sheet' and file.name.lower().endswith(('.png', '.jpg', '.jpeg', '.gif')):
+                # Store image name without extension as key
+                image_name = os.path.splitext(file.name)[0]
+                image_files[image_name] = file
+        
+        try:
+            # Read the sheet file based on its extension
+            if sheet_file.name.endswith('.csv'):
+                df = pd.read_csv(sheet_file)
+            else:
+                df = pd.read_excel(sheet_file)
+                
+            # Validate required columns
+            required_columns = ['name', 'price', 'stock', 'category', 'image_name']
+            missing_columns = [col for col in required_columns if col not in df.columns]
+            if missing_columns:
+                return Response({'error': f'Missing required columns: {", ".join(missing_columns)}'}, 
+                               status=status.HTTP_400_BAD_REQUEST)
+            
+            # Process the data
+            products_created = 0
+            products_updated = 0
+            errors = []
+            
+            # Process each row individually without a transaction
+            # so errors in one row don't affect others
+            for index, row in df.iterrows():
+                try:
+                    # Get image file by name
+                    image_name = str(row['image_name']).strip()
+                    image_file = image_files.get(image_name)
+                    
+                    if not image_file:
+                        errors.append(f"Row {index+2}: Image '{image_name}' not found in uploaded files")
+                        continue
+                    
+
+                    # Try to find an existing category with case-insensitive comparison
+                    category_name = str(row['category'])
+                    existing_category = Category.objects.filter(name__iexact=category_name).first()
+                    if existing_category:
+                        category = existing_category
+                    else:
+                        # Create new category with the original casing from the sheet
+                        category = Category.objects.create(name=category_name)
+                    
+                    # Save image to media storage
+                    image_path = f'media/product/{image_file.name}'
+                    saved_path = default_storage.save(image_path, ContentFile(image_file.read()))
+                    
+                    # Check if product with this name already exists
+                    product_name = row['name']
+                    existing_product = Product.objects.filter(name=product_name).first()
+                    
+                    if existing_product:
+                        # Update existing product
+                        existing_product.price = float(row['price'])
+                        existing_product.stock = int(row['stock'])
+                        existing_product.category = category
+                        existing_product.description = row.get('description', '')
+                        existing_product.image = saved_path
+                        existing_product.save()
+                        products_updated += 1
+                    else:
+                        # Create new product
+                        Product.objects.create(
+                            name=product_name,
+                            price=float(row['price']),
+                            stock=int(row['stock']),
+                            category=category,
+                            description=row.get('description', ''),
+                            image=saved_path
+                        )
+                        products_created += 1
+                    
+                except Exception as e:
+                    from django.db import IntegrityError
+                    if isinstance(e, IntegrityError) and "unique constraint" in str(e).lower():
+                        errors.append(f"Row {index+2}: Product with name '{row['name']}' already exists")
+                    else:
+                        errors.append(f"Row {index+2}: {str(e)}")
+            
+            result_message = f'Created {products_created} products'
+            if products_updated > 0:
+                result_message += f', updated {products_updated} existing products'
+            
+            if errors:
+                return Response({
+                    'message': f'{result_message} with {len(errors)} errors',
+                    'errors': errors
+                }, status=status.HTTP_207_MULTI_STATUS)
+                
+            return Response({
+                'message': result_message
+            }, status=status.HTTP_201_CREATED)
+            
+        except Exception as e:
+            return Response({'error': f'Error processing file: {str(e)}'}, status=status.HTTP_400_BAD_REQUEST)
