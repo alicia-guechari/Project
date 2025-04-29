@@ -71,19 +71,6 @@ class ProductFilter(django_filters.FilterSet):
         model = Product
         fields = ['min_price', 'max_price', 'category', 'in_stock']
 
-class ProductListCreateView(generics.ListCreateAPIView):
-    queryset = Product.objects.all()
-
-    def get_permissions(self):
-        if self.request.method == 'GET':
-            return []
-        return [permissions.IsAdminUser()]  
-
-    def get_serializer_class(self):
-        if self.request.method == 'GET':
-            return ProductListSerializer
-        return ProductSerializer
-
 class ProductDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Product.objects.all()
 
@@ -97,13 +84,22 @@ class ProductDetailView(generics.RetrieveUpdateDestroyAPIView):
             return ProductListSerializer
         return ProductSerializer
 
-class ProductSearchView(generics.ListAPIView): 
+class ProductListCreateView(generics.ListCreateAPIView): 
     queryset = Product.objects.select_related('category').all() # is just a performance optimization
-    serializer_class = ProductListSerializer
     filter_backends = [django_filters.DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_class = ProductFilter
     search_fields = ['name', 'description', 'category__name']
     ordering_fields = ['price', 'name']
+
+    def get_permissions(self):
+        if self.request.method == 'GET':
+            return []
+        return [permissions.IsAdminUser()]  
+
+    def get_serializer_class(self):
+        if self.request.method == 'GET':
+            return ProductListSerializer
+        return ProductSerializer
 
 # ---------------------------------------Category----------------------------------------------for admin
 
