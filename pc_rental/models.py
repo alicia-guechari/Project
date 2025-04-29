@@ -15,54 +15,39 @@ class PC(models.Model):
     description = models.TextField()  
     price_per_day = models.DecimalField(max_digits=6, decimal_places=2, help_text="Rental price per day in USD") 
     is_available = models.BooleanField(blank=True, default=True)
+    aviability_date = models.DateTimeField(blank=True, null=True)    # the date when the pc will be aviable if it is not
     image = models.ImageField(upload_to="pc_images/")
 
     def __str__(self):
         return f"{self.name} ({self.cpu}, {self.ram}GB RAM , {self.storage}GB)"
     
-    def average_rating(self):
-        return self.reviews.aggregate(avg_rating=Avg("rating"))["avg_rating"] or 0
+    # def average_rating(self):
+    #     return self.reviews.aggregate(avg_rating=Avg("rating"))["avg_rating"] or 0
 
 
 
 class Rental(models.Model):
     PAYEMENT_CHOICES = [('cash', 'Cash'), ('cib', 'CIB'), ('edahabia', 'Edahabia')]
+    # STATUS_CHOICES = [("pending", "Pending"), ("approved", "Approved"), ("rejected", "Rejected")]
 
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)  # Who is renting
-    pc = models.ForeignKey(PC, on_delete=models.CASCADE)  # Which PC is rented
-    rental_date = models.DateTimeField(auto_now_add=True)  # When the rental starts
-    return_date = models.DateTimeField()  # When the PC is expected to be returned
-    total_price = models.DecimalField(max_digits=8, decimal_places=2, blank=True, editable=False)  # Total rental cost
-    is_active = models.BooleanField(default=True)  # If the rental is ongoing
-    payement_method = models.CharField(max_length=10, choices=PAYEMENT_CHOICES, default='cash')  # How the rental is paid
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    pc = models.ForeignKey(PC, on_delete=models.CASCADE)
+    # status = models.CharField( max_length=10, choices=STATUS_CHOICES, default="pending")
+    rental_date = models.DateTimeField()
+    return_date = models.DateTimeField()
+    total_price = models.DecimalField(max_digits=8, decimal_places=2, blank=True, editable=False)
+    is_active = models.BooleanField(default=True)
+    payement_method = models.CharField(max_length=10, choices=PAYEMENT_CHOICES)
 
     def save(self, *args, **kwargs):
-        if not self.pk:  # If this is a new rental
-            self.rental_date = timezone.now()  # Set rental_date to current time
-        
-        if self.return_date and self.rental_date:  # Only calculate if both dates exist
-            days = (self.return_date - self.rental_date).days
-            if days < 1:
-                days = 1
-            self.total_price = days * self.pc.price_per_day
+        days = (self.return_date - self.rental_date).days
+        if days < 1:
+            days = 1
+        self.total_price = days * self.pc.price_per_day
         super().save(*args, **kwargs)
 
     def __str__(self):
-        return f"{self.user} rented {self.pc} on {self.rental_date}"
-
-class RentalRequest(models.Model): # to approve the rental request by the admin
-    customer = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    pc = models.ForeignKey(PC, on_delete=models.CASCADE)
-    request_date = models.DateTimeField(auto_now_add=True)
-    status = models.CharField(
-        max_length=10,
-        choices=[("pending", "Pending"), ("approved", "Approved"), ("rejected", "Rejected")],
-        default="pending",
-    )
-
-    def __str__(self):
-        return f"{self.customer} requested {self.pc} ({self.status})"
-
+        return f"{self.user} rented {self.pc} ({self.status})"
 
 class Review(models.Model):
     customer = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)  # Who is reviewing

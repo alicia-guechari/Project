@@ -7,13 +7,17 @@ class PCSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class RentalSerializer(serializers.ModelSerializer):
+    pc = serializers.ReadOnlyField(source='pc.name')
+    user = serializers.SerializerMethodField()
+
+    def get_user(self, obj):
+        return {
+            'username' : obj.user.username,
+            'email' : obj.user.email,
+            'phone' : obj.user.phone,
+        }
+
     class Meta:
         model = Rental
         fields = '__all__'
         read_only_fields = ['user']
-
-class RentalRequestSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = RentalRequest
-        fields = '__all__'
-        read_only_fields = ['customer', 'request_date']
