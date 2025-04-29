@@ -21,6 +21,7 @@ urlpatterns = [
     path("order/<int:pk>/", OrderManagerView.as_view()),
     path("order/checkout", checkout),
 
+    path('statistics/', SiteStatisticsView.as_view()),
     path('chargily/', chargilyCheckout),
 ]
 

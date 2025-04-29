@@ -7,6 +7,8 @@ from django_filters import rest_framework as django_filters
 from .models import *
 from .serializers import *
 
+from django.db.models import Sum, Count
+
 
 class AddToCartView(APIView):
     permission_classes = [permissions.IsAuthenticated]
@@ -69,7 +71,7 @@ class ProductFilter(django_filters.FilterSet):
         model = Product
         fields = ['min_price', 'max_price', 'category', 'in_stock']
 
-class ProductListCreateView(generics.ListCreateAPIView):  # for creation (only admin) and listing (all users)
+class ProductListCreateView(generics.ListCreateAPIView):
     queryset = Product.objects.all()
 
     def get_permissions(self):
@@ -82,7 +84,7 @@ class ProductListCreateView(generics.ListCreateAPIView):  # for creation (only a
             return ProductListSerializer
         return ProductSerializer
 
-class ProductDetailView(generics.RetrieveUpdateDestroyAPIView): # update and delete (admin only) , get one prod (for public)
+class ProductDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Product.objects.all()
 
     def get_permissions(self):
@@ -95,7 +97,7 @@ class ProductDetailView(generics.RetrieveUpdateDestroyAPIView): # update and del
             return ProductListSerializer
         return ProductSerializer
 
-class ProductSearchView(generics.ListAPIView): # for search and ordering and filtering 
+class ProductSearchView(generics.ListAPIView): 
     queryset = Product.objects.select_related('category').all() # is just a performance optimization
     serializer_class = ProductListSerializer
     filter_backends = [django_filters.DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
@@ -105,7 +107,7 @@ class ProductSearchView(generics.ListAPIView): # for search and ordering and fil
 
 # ---------------------------------------Category----------------------------------------------for admin
 
-class CategoryView(generics.ListCreateAPIView):   #list and create (admin only)
+class CategoryView(generics.ListCreateAPIView):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
     pagination_class = None
@@ -115,7 +117,7 @@ class CategoryView(generics.ListCreateAPIView):   #list and create (admin only)
             return []
         return [permissions.IsAdminUser()]
 
-class CategoryManagerView(generics.RetrieveUpdateDestroyAPIView): # retrieving, updating, and deleting a single category.
+class CategoryManagerView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
     permission_classes = [permissions.IsAdminUser]
@@ -208,3 +210,37 @@ class OrderManagerView(generics.RetrieveUpdateDestroyAPIView):
         if self.request.method in ['DELETE', 'GET']:
             return [permissions.IsAuthenticated()]
         return [permissions.IsAdminUser()]
+
+
+# ---------------------------------------Total----------------------------------------------
+
+class SiteStatisticsView(APIView):    
+    permission_classes = [permissions.IsAdminUser]
+    def get(self, request):        
+        total_products = Product.objects.count()
+        total_orders = Order.objects.count()
+        total_users = Customer.objects.count()        
+        total_revenue = Order.objects.aggregate(Sum('total_price'))['total_price__sum'] or 0        
+        statistics = {            
+            'total_products': total_products,
+            'total_orders': total_orders,            
+            'total_users': total_users,
+            'total_revenue': total_revenue,            
+        }
+
+        return Response(statistics)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
