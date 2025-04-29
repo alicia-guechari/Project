@@ -29,7 +29,7 @@ class Category(models.Model):
 class Product(models.Model):
 	name = models.CharField(max_length=100, unique=True)
 	description = models.CharField(max_length=250, blank=True, null=True )
-	price = models.DecimalField(decimal_places=2, max_digits=6)
+	price = models.DecimalField(decimal_places=2, max_digits=14)
 	category = models.ForeignKey(Category, on_delete=models.CASCADE)
 	image = models.ImageField(upload_to='media/product/')
 	stock = models.PositiveIntegerField()

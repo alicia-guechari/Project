@@ -18,7 +18,7 @@ class ProductSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class ProductListSerializer(serializers.ModelSerializer):
-    category = serializers.ReadOnlyField(source='category.name')
+    category = CategorySerializer()
 
     class Meta:
         model = Product
