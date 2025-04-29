@@ -10,6 +10,7 @@ from .serializers import *
 from django.db.models import Sum, Count
 
 
+
 class AddToCartView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
@@ -85,11 +86,11 @@ class ProductDetailView(generics.RetrieveUpdateDestroyAPIView):
         return ProductSerializer
 
 class ProductListCreateView(generics.ListCreateAPIView): 
-    queryset = Product.objects.select_related('category').all() # is just a performance optimization
+    queryset = Product.objects.select_related('category').all()
     filter_backends = [django_filters.DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_class = ProductFilter
     search_fields = ['name', 'description', 'category__name']
-    ordering_fields = ['price', 'name']
+    ordering_fields = ['price']
 
     def get_permissions(self):
         if self.request.method == 'GET':
@@ -169,25 +170,41 @@ def checkout(request):
 
     if not cart.items.exists():
         return Response({'error': 'cart is empty'}, status=400)
+    
     total = cart.total_price()
-
     if payement_method != 'cash':
         # make e-payment
         pass    
+    
     order = Order.objects.create(user=user, total_price=total, address=address, payement_method=payement_method)
-
     for item in cart.items.all():
         OrderItem.objects.create(
             order=order,
             product=item.product,
             quantity=item.quantity,
         )
+        
+        product = item.product
+        product.stock -= item.quantity
+        product.save()
+        
     cart.items.all().delete()
     return Response({'message': 'Order created successfully'})
+
+class OrderFilter(django_filters.FilterSet):
+    status = django_filters.CharFilter(field_name="status", lookup_expr='iexact')
+
+    class Meta:
+        model = Order
+        fields = ['status']
 
 class ListOrderView(generics.ListAPIView):
     serializer_class = OrderSerializer
     permission_classes = [permissions.IsAuthenticated]
+    filter_backends = [django_filters.DjangoFilterBackend, filters.OrderingFilter]
+    filterset_class = OrderFilter
+    ordering_fields = ['created_at', 'total_price', 'status']
+    ordering = ['-created_at']
 
     def get_queryset(self):
         if self.request.user.is_staff:
@@ -223,20 +240,5 @@ class SiteStatisticsView(APIView):
             'total_users': total_users,
             'total_revenue': total_revenue,            
         }
-
         return Response(statistics)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
