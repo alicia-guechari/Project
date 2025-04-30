@@ -6,7 +6,7 @@ class PCSerializer(serializers.ModelSerializer):
         model = PC
         fields = '__all__'
 
-class RentalSerializer(serializers.ModelSerializer):
+class ListingRentalSerializer(serializers.ModelSerializer):
     pc = serializers.ReadOnlyField(source='pc.name')
     user = serializers.SerializerMethodField()
 
@@ -17,6 +17,12 @@ class RentalSerializer(serializers.ModelSerializer):
             'phone' : obj.user.phone,
         }
 
+    class Meta:
+        model = Rental
+        fields = '__all__'
+        read_only_fields = ['user']
+
+class RentalSerializer(serializers.ModelSerializer):
     class Meta:
         model = Rental
         fields = '__all__'

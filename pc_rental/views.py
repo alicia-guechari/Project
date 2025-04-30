@@ -51,6 +51,11 @@ class ListRequestPcRent(generics.ListCreateAPIView):
         if self.request.user.is_staff:
             return Rental.objects.all()
         return Rental.objects.filter(user=self.request.user)
+    
+    def get_serializer_class(self):
+        if self.request.method == 'GET':
+            return ListingRentalSerializer
+        return RentalSerializer
 
     def create(self, request, *args, **kwargs):
         from django.utils.dateparse import parse_datetime
@@ -58,18 +63,11 @@ class ListRequestPcRent(generics.ListCreateAPIView):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
-        pc_id = request.data.get('pc')
-        rental_date = request.data.get('rental_date')
-        return_date = request.data.get('return_date')
-        
-        rental_datetime = parse_datetime(rental_date)
+        return_date = request.data.get('return_date')        
         return_datetime = parse_datetime(return_date)
-        
-        pc = get_object_or_404(PC, id=pc_id)        
-        
-        if pc.aviability_date and rental_datetime < pc.aviability_date:
-            return Response({'error': 'PC is not available for the requested date'}, status=status.HTTP_400_BAD_REQUEST)
-        
+
+        pc_id = request.data.get('pc')
+        pc = get_object_or_404(PC, id=pc_id)
         pc.aviability_date = return_datetime + timedelta(days=2)
         pc.is_available = False
         pc.save()
@@ -100,5 +98,4 @@ def confirm_return(request, rental_id):
 
     rental.pc.is_available = True
     rental.pc.save()
-
     return Response({'message': 'PC return confirmed successfully'})

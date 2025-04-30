@@ -13,21 +13,17 @@ class PC(models.Model):
     display_size = models.DecimalField(max_digits=4, decimal_places=1, blank=True, null=True, help_text="Display size in inches")  
     operating_system = models.CharField(max_length=50, blank=True, null=True) 
     description = models.TextField()  
-    price_per_day = models.DecimalField(max_digits=6, decimal_places=2, help_text="Rental price per day in USD") 
+    price_per_day = models.DecimalField(max_digits=10, decimal_places=2, help_text="Rental price per day in USD") 
     is_available = models.BooleanField(blank=True, default=True)
-    aviability_date = models.DateTimeField(blank=True, null=True)    # the date when the pc will be aviable if it is not
+    aviability_date = models.DateField(blank=True, null=True)    # the date when the pc will be aviable if it is not
     image = models.ImageField(upload_to="pc_images/")
 
     def __str__(self):
         return f"{self.name} ({self.cpu}, {self.ram}GB RAM , {self.storage}GB)"
-    
-    # def average_rating(self):
-    #     return self.reviews.aggregate(avg_rating=Avg("rating"))["avg_rating"] or 0
-
 
 
 class Rental(models.Model):
-    PAYEMENT_CHOICES = [('cash', 'Cash'), ('cib', 'CIB'), ('edahabia', 'Edahabia')]
+    PAYMENT_CHOICES = [('cash', 'Cash'), ('cib', 'CIB'), ('edahabia', 'Edahabia')]
 
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     pc = models.ForeignKey(PC, on_delete=models.CASCADE)
@@ -35,7 +31,7 @@ class Rental(models.Model):
     return_date = models.DateField()
     total_price = models.DecimalField(max_digits=8, decimal_places=2, blank=True, editable=False)
     is_active = models.BooleanField(default=True)
-    payement_method = models.CharField(max_length=10, choices=PAYEMENT_CHOICES)
+    payment_method = models.CharField(max_length=10, choices=PAYMENT_CHOICES)
 
     def save(self, *args, **kwargs):
         days = (self.return_date - self.rental_date).days
