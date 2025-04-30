@@ -23,16 +23,15 @@ load_dotenv()
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # # SECURITY WARNING: don't run with debug turned on in production!
-# ALLOWED_HOSTS = []
+# ALLOWED_HOSTS = ['gearbyte.onrender.com', 'localhost', '127.0.0.1']
 # DEBUG = False
 
 
 # SECRET_KEY = os.getenv('SECRET_KEY', 'fallback-secret-key')
 # DEBUG = os.getenv('DEBUG', 'False') == 'True'
-# ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '*').split(',')
 
+ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '*').split(',')
 SECRET_KEY = os.environ.get("SECRET_KEY", "fallback-secret-key")
-
 DEBUG = os.environ.get("DEBUG", "") != "False"
 
 
@@ -92,15 +91,10 @@ REST_FRAMEWORK = {
 
 REST_AUTH = {
     'USER_DETAILS_SERIALIZER': 'Store.serializers.CustomUserDetailsSerializer',
+    'PASSWORD_RESET_SERIALIZER': 'Store.serializers.CustomPasswordResetSerializer',
 }
 
 
-# if os.getenv('DEBUG')=='True':
-
-#  EMAIL_BACKEND = 'django.core.mail.backends.filebased.EmailBackend'
-#  EMAIL_FILE_PATH = os.path.join(BASE_DIR, 'emails')
-
-# else:
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = os.getenv('EMAIL_HOST')
 EMAIL_PORT = int(os.getenv('EMAIL_PORT', 587))
@@ -122,10 +116,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-CORS_ALLOWED_ORIGINS = ["http://localhost:3000"]
-CORS_TRUSTED_ORIGINS = ["http://localhost:3000"]
-
-
+CORS_ALLOW_ALL_ORIGINS = True
 
 
 ROOT_URLCONF = 'website.urls'
@@ -151,18 +142,11 @@ AUTH_USER_MODEL='Store.Customer'
 WSGI_APPLICATION = 'website.wsgi.application'
 
 
-# Database
-# https://docs.djangoproject.com/en/5.1/ref/settings/#databases
-
 # DATABASES = {
 #     'default': {
 #         'ENGINE': 'django.db.backends.sqlite3',
 #         'NAME': BASE_DIR / 'db.sqlite3',
 #     }
-# }
-
-# DATABASES = {
-#     'default': dj_database_url.config(default=os.environ.get('DATABASE_URL'))
 # }
 
 DATABASES = {
@@ -226,7 +210,5 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 CHARGILI_PUBLIC_KEY = os.getenv('CHARGILI_PUBLIC_KEY')
 CHARGILI_SECRET_KEY = os.getenv('CHARGILI_SECRET_KEY')
 
-
-ALLOWED_HOSTS = ['gearbyte.onrender.com', 'localhost', '127.0.0.1']
 
 print("DATABASE_URL:", os.getenv("DATABASE_URL"))
