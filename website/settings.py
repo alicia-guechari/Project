@@ -91,7 +91,7 @@ REST_FRAMEWORK = {
 
 REST_AUTH = {
     'USER_DETAILS_SERIALIZER': 'Store.serializers.CustomUserDetailsSerializer',
-    'PASSWORD_RESET_SERIALIZER': 'Store.serializers.CustomPasswordResetSerializer',
+    # 'PASSWORD_RESET_SERIALIZER': 'Store.serializers.CustomPasswordResetSerializer',
 }
 
 
