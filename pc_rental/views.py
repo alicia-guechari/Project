@@ -46,11 +46,11 @@ def chargilyCheckout(request):
 class ListRequestPcRent(generics.ListCreateAPIView):
     serializer_class = RentalSerializer
     permission_classes = [permissions.IsAuthenticated]
-
+    
     def get_queryset(self):
         if self.request.user.is_staff:
-            return Rental.objects.all()
-        return Rental.objects.filter(user=self.request.user)
+            return Rental.objects.all().order_by('-is_active', '-rental_date')
+        return Rental.objects.filter(user=self.request.user).order_by('-is_active', '-rental_date')
     
     def get_serializer_class(self):
         if self.request.method == 'GET':
