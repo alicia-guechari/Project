@@ -89,10 +89,10 @@ REST_FRAMEWORK = {
     'ORDERING_PARAM': 'ordering',
 }
 
-REST_AUTH = {
-    'USER_DETAILS_SERIALIZER': 'Store.serializers.CustomUserDetailsSerializer',
-    'PASSWORD_RESET_SERIALIZER': 'Store.serializers.CustomPasswordResetSerializer',
-}
+# REST_AUTH = {
+#     'USER_DETAILS_SERIALIZER': 'Store.serializers.CustomUserDetailsSerializer',
+#     'PASSWORD_RESET_SERIALIZER': 'Store.serializers.CustomPasswordResetSerializer',
+# }
 
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
