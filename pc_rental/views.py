@@ -26,7 +26,11 @@ class PCListCreateView(generics.ListCreateAPIView):
 class PCManagerView(generics.RetrieveUpdateDestroyAPIView): #Retrieving, updating, and deleting a single PC instance.
     queryset = PC.objects.all()
     serializer_class = PCSerializer
-    permission_classes = [permissions.IsAdminUser]
+
+    def get_permissions(self):
+        if self.request.method == 'GET':
+            return []
+        return [permissions.IsAdminUser]
 
 #   **********************************rental*******************************
 

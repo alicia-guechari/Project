@@ -4,6 +4,7 @@ from django.contrib.auth.models import AbstractUser # assuming dj's default user
 # Customers
 class Customer(AbstractUser):
     phone = models.CharField(max_length=15)
+    chargily_id = models.CharField(max_length=100, blank=True, null=True)
 
 # address of users
 class Address(models.Model):
@@ -46,7 +47,7 @@ class Order(models.Model):
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, blank=True, default='pending')
     total_price = models.DecimalField(max_digits=10, decimal_places=2) #Stores the total cost of all items in the order, this is the total price of the order before taxes and shipping fees are applied
     address = models.ForeignKey(Address, on_delete=models.SET_NULL, null=True, blank=True) # the on_dele... ensures that the order won't be deleted id the addr is deleted
-    payement_method = models.CharField(max_length=10, choices=PAYEMENT_CHOICES, default='cash')
+    payment_method = models.CharField(max_length=10, choices=PAYEMENT_CHOICES, default='cash')
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
