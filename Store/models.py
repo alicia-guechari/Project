@@ -1,5 +1,5 @@
 from django.db import models
-from django.contrib.auth.models import AbstractUser # assuming dj's default user model
+from django.contrib.auth.models import AbstractUser
 
 # Customers
 class Customer(AbstractUser):

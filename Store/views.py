@@ -149,38 +149,53 @@ class AddressDetailView(generics.RetrieveUpdateDestroyAPIView):
 from chargily_pay.api import ChargilyClient
 from chargily_pay.settings import CHARGILIY_TEST_URL, CHARGILIY_URL
 from chargily_pay.entity import Checkout
+from chargily_pay.entity import Customer as Ch_Customer
 from website import settings
 
 chargily = ChargilyClient(settings.CHARGILI_PUBLIC_KEY, settings.CHARGILI_SECRET_KEY, CHARGILIY_URL)
 
-@api_view(['POST'])
-def chargilyCheckout(request):
-    response = chargily.create_checkout(
+def make_payment(amount, payment_method, id):
+    return chargily.create_checkout(
         Checkout(
-            success_url='http://localhost:8000/store/order/' ,
-            amount=540,
+            success_url='http://localhost:5173/orderconfirmation',
+            failure_url='http://localhost:5173/cart',
+            amount=amount,
             currency='dzd',
             locale='en',
+            payment_method=payment_method,
+            customer_id=id,
         ))
-    return Response({'message':'checkouted', 'response':response})
+
+@api_view(['POST']) 
+def chargilyCheckout(request):
+    response = make_payment(100.67, 'edahabia', '01jtbkttpvs8p0yk90wwqxqt11')
+    return Response({'respons':response})
+    # response = make_payment(100, 'cib')
+    # return Response({'message':'checkouted', 'response':response})
 
 @api_view(['POST'])
 @permission_classes([permissions.IsAuthenticated])
 def checkout(request):
     user = request.user
+    address_id = request.data.get('address')
+    payment_method = request.data.get('payment_method')
+
+    address = get_object_or_404(Address, id=address_id) 
     cart = get_object_or_404(Cart, user=user)
-    address = request.data.get('address')
-    payement_method = request.data.get('payement_method')
 
     if not cart.items.exists():
         return Response({'error': 'cart is empty'}, status=400)
     
     total = cart.total_price()
-    if payement_method != 'cash':
-        # make e-payment
-        pass    
+    payment_response = None
+    if payment_method != 'cash':
+        try:
+            chargily_id = user.chargily_id 
+            payment_response = make_payment(float(total), payment_method, chargily_id)
+        except Exception as e:
+            return Response({'error':str(e)})
     
-    order = Order.objects.create(user=user, total_price=total, address=address, payement_method=payement_method)
+    order = Order.objects.create(user=user, total_price=total, address=address, payment_method=payment_method)
     for item in cart.items.all():
         OrderItem.objects.create(
             order=order,
@@ -193,7 +208,7 @@ def checkout(request):
         product.save()
         
     cart.items.all().delete()
-    return Response({'message': 'Order created successfully'})
+    return Response({'message': 'order created', 'payment_response': payment_response})
 
 class OrderFilter(django_filters.FilterSet):
     status = django_filters.CharFilter(field_name="status", lookup_expr='iexact')
@@ -245,7 +260,6 @@ class SiteStatisticsView(APIView):
             'total_revenue': total_revenue,            
         }
         return Response(statistics)
-
 
 class BulkProductUploadView(APIView):
     parser_classes = [MultiPartParser, FormParser]
