@@ -91,9 +91,12 @@ REST_FRAMEWORK = {
 
 REST_AUTH = {
     'USER_DETAILS_SERIALIZER': 'Store.serializers.CustomUserDetailsSerializer',
-    # 'PASSWORD_RESET_SERIALIZER': 'Store.serializers.CustomPasswordResetSerializer',
+    'PASSWORD_RESET_USE_SITES_DOMAIN' : True,
+    'REGISTER_SERIALIZER': 'Store.serializers.CustomRegisterSerializer',
+    # 'LOGIN_SERIALIZER': 'Store.serializers.CustomLoginSerializer',
 }
 
+# AUTHENTICATION_BACKENDS = ['Store.serializers.PhoneBackend']
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = os.getenv('EMAIL_HOST')
