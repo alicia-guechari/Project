@@ -33,12 +33,12 @@ class Rental(models.Model):
     is_active = models.BooleanField(default=True)
     payment_method = models.CharField(max_length=10, choices=PAYMENT_CHOICES)
 
-    def save(self, *args, **kwargs):
-        days = (self.return_date - self.rental_date).days
-        if days < 1:
-            days = 1
-        self.total_price = days * self.pc.price_per_day
-        super().save(*args, **kwargs)
+    # def save(self, *args, **kwargs):
+        # days = (self.return_date - self.rental_date).days
+        # if days < 1:
+        #     days = 1
+        # self.total_price = days * self.pc.price_per_day
+        # super().save(*args, **kwargs)
 
     def __str__(self):
         return f"{self.user} rented {self.pc}"

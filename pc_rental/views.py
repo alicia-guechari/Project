@@ -8,8 +8,10 @@ from datetime import timedelta
 
 from chargily_pay.api import ChargilyClient
 from chargily_pay.settings import CHARGILIY_TEST_URL
-from chargily_pay.entity import Checkout
 from website import settings
+from Store.views import make_payment
+from django.utils.dateparse import parse_datetime
+
 
 #   **********************************PCs*******************************
 
@@ -19,36 +21,23 @@ class PCListCreateView(generics.ListCreateAPIView):
 
     def get_permissions_class(self):
         if self.request.method == 'GET':
-            print('==============================')
             return []
-        return [permissions.IsAdminUser]
+        return [permissions.IsAdminUser()]
 
-class PCManagerView(generics.RetrieveUpdateDestroyAPIView): #Retrieving, updating, and deleting a single PC instance.
+class PCManagerView(generics.RetrieveUpdateDestroyAPIView): 
     queryset = PC.objects.all()
     serializer_class = PCSerializer
 
     def get_permissions(self):
         if self.request.method == 'GET':
             return []
-        return [permissions.IsAdminUser]
+        return [permissions.IsAdminUser()]
 
 #   **********************************rental*******************************
 
 chargily = ChargilyClient(settings.CHARGILI_PUBLIC_KEY, settings.CHARGILI_SECRET_KEY, CHARGILIY_TEST_URL)
 
-@api_view(['POST'])
-def chargilyCheckout(request):
-    response = chargily.create_checkout(
-        Checkout(
-            success_url='http://google.com/',
-            amount=540,
-            currency='dzd',
-            locale='en',
-        ))
-    return Response({'message':'checkouted', 'response':response})
-
-class ListRequestPcRent(generics.ListCreateAPIView):
-    serializer_class = RentalSerializer
+class ListRequestRent(generics.ListCreateAPIView):
     permission_classes = [permissions.IsAuthenticated]
     
     def get_queryset(self):
@@ -62,23 +51,34 @@ class ListRequestPcRent(generics.ListCreateAPIView):
         return RentalSerializer
 
     def create(self, request, *args, **kwargs):
-        from django.utils.dateparse import parse_datetime
-
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
-        return_date = request.data.get('return_date')        
+        return_date = request.data.get('return_date')
         return_datetime = parse_datetime(return_date)
-
+        rental_date = request.data.get('rental_date')
+        rental_datetime = parse_datetime(rental_date)        
+        
         pc_id = request.data.get('pc')
         pc = get_object_or_404(PC, id=pc_id)
         pc.aviability_date = return_datetime + timedelta(days=2)
         pc.is_available = False
         pc.save()
-        
-        serializer.save(user=self.request.user)
+
+        days = (return_datetime - rental_datetime).days
+        total_price = days * pc.price_per_day
+        serializer.save(user=self.request.user, total_price=total_price)
         headers = self.get_success_headers(serializer.data)
-        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+        
+        payment_method = request.data.get('payment_method')
+        payment_response = None
+        if payment_method != 'cash':
+            try:
+                payment_response = make_payment(float(total_price), payment_method, self.request.user.pk)
+            except Exception as e:
+                return Response({'error':str(e)})
+
+        return Response({'message':'','payment_response':payment_response}, status=status.HTTP_201_CREATED, headers=headers)
 
 class RentalManagerView(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = [permissions.IsAuthenticated]
