@@ -148,13 +148,23 @@ class AddressDetailView(generics.RetrieveUpdateDestroyAPIView):
 
 from chargily_pay.api import ChargilyClient
 from chargily_pay.settings import CHARGILIY_TEST_URL, CHARGILIY_URL
-from chargily_pay.entity import Checkout
-from chargily_pay.entity import Customer as Ch_Customer
+from chargily_pay.entity import Checkout, Customer as Ch_Customer
 from website import settings
 
 chargily = ChargilyClient(settings.CHARGILI_PUBLIC_KEY, settings.CHARGILI_SECRET_KEY, CHARGILIY_URL)
 
 def make_payment(amount, payment_method, id):
+    user = Customer.objects.get(pk=id)
+    chargily_id = user.chargily_id
+    if not chargily_id:
+        try:
+            response = chargily.create_customer(Ch_Customer(name=user.username, email=user.email, phone=user.phone))
+            user.chargily_id = response['id']
+            chargily_id = response['id']
+            user.save()
+        except Exception as e:
+            print(f'chargily error: {str(e)}')
+        
     return chargily.create_checkout(
         Checkout(
             success_url='http://localhost:5173/orderconfirmation',
@@ -163,15 +173,22 @@ def make_payment(amount, payment_method, id):
             currency='dzd',
             locale='en',
             payment_method=payment_method,
-            customer_id=id,
+            customer_id=chargily_id,
         ))
 
 @api_view(['POST']) 
 def chargilyCheckout(request):
-    response = make_payment(100.67, 'edahabia', '01jtbkttpvs8p0yk90wwqxqt11')
-    return Response({'respons':response})
-    # response = make_payment(100, 'cib')
-    # return Response({'message':'checkouted', 'response':response})
+    response = chargily.create_checkout(
+        Checkout(
+            success_url='http://localhost:5173/orderconfirmation',
+            failure_url='http://localhost:5173/cart',
+            amount=200.99,
+            currency='dzd',
+            locale='en',
+            payment_method='edahabia',
+            customer_id='01jtbkttpvs8p0yk90wwqxqt11',
+        ))
+    return Response({'response':response}) 
 
 @api_view(['POST'])
 @permission_classes([permissions.IsAuthenticated])
@@ -190,8 +207,7 @@ def checkout(request):
     payment_response = None
     if payment_method != 'cash':
         try:
-            chargily_id = user.chargily_id 
-            payment_response = make_payment(float(total), payment_method, chargily_id)
+            payment_response = make_payment(float(total), payment_method, user.pk)
         except Exception as e:
             return Response({'error':str(e)})
     
