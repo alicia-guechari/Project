@@ -212,6 +212,3 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 CHARGILI_PUBLIC_KEY = os.getenv('CHARGILI_PUBLIC_KEY')
 CHARGILI_SECRET_KEY = os.getenv('CHARGILI_SECRET_KEY')
-
-
-print("DATABASE_URL:", os.getenv("DATABASE_URL"))
