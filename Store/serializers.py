@@ -4,37 +4,37 @@ from dj_rest_auth.serializers import UserDetailsSerializer, LoginSerializer
 from dj_rest_auth.registration.serializers import RegisterSerializer
 
 
-# from django.contrib.auth import authenticate
-# from django.contrib.auth.backends import ModelBackend
-# from django.contrib.auth import get_user_model
+from django.contrib.auth import authenticate
+from django.contrib.auth.backends import ModelBackend
+from django.contrib.auth import get_user_model
 
-# class PhoneBackend(ModelBackend):
-#     def authenticate(self, request, phone=None, password=None, **kwargs):
-#         UserModel = get_user_model()
-#         try:
-#             user = UserModel.objects.get(phone=phone)
-#             if user.check_password(password):
-#                 return user
-#         except UserModel.DoesNotExist:
-#             return None
+class PhoneBackend(ModelBackend):
+    def authenticate(self, request, phone=None, password=None, **kwargs):
+        UserModel = get_user_model()
+        try:
+            user = UserModel.objects.get(phone=phone)
+            if user.check_password(password):
+                return user
+        except UserModel.DoesNotExist:
+            return None
 
-# class CustomLoginSerializer(LoginSerializer):
-#     phone = serializers.CharField(required=True)
-#     username = None
+class CustomLoginSerializer(LoginSerializer):
+    phone = serializers.CharField(required=True)
+    username = None
 
-#     def validate(self, attrs):
-#         phone = attrs.get('phone')
-#         password = attrs.get('password')
+    def validate(self, attrs):
+        phone = attrs.get('phone')
+        password = attrs.get('password')
 
-#         if phone and password:
-#             user = authenticate(request=self.context.get('request'), phone=phone, password=password)
-#             if not user:
-#                 raise serializers.ValidationError("Invalid phone or password.")
-#         else:
-#             raise serializers.ValidationError("Must include 'phone' and 'password'.")
+        if phone and password:
+            user = authenticate(request=self.context.get('request'), phone=phone, password=password)
+            if not user:
+                raise serializers.ValidationError("Invalid phone or password.")
+        else:
+            raise serializers.ValidationError("Must include 'phone' and 'password'.")
 
-#         attrs['user'] = user
-#         return attrs
+        attrs['user'] = user
+        return attrs
 from chargily_pay.api import ChargilyClient
 from chargily_pay.settings import CHARGILIY_URL
 from chargily_pay.entity import Customer as Ch_Customer

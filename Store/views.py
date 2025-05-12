@@ -293,34 +293,27 @@ class BulkProductUploadView(APIView):
         image_files = {}
         for key, file in request.FILES.items():
             if key != 'sheet' and file.name.lower().endswith(('.png', '.jpg', '.jpeg', '.gif')):
-                # Store image name without extension as key
                 image_name = os.path.splitext(file.name)[0]
                 image_files[image_name] = file
         
         try:
-            # Read the sheet file based on its extension
             if sheet_file.name.endswith('.csv'):
                 df = pd.read_csv(sheet_file)
             else:
                 df = pd.read_excel(sheet_file)
                 
-            # Validate required columns
             required_columns = ['name', 'price', 'stock', 'category', 'image_name']
             missing_columns = [col for col in required_columns if col not in df.columns]
             if missing_columns:
                 return Response({'error': f'Missing required columns: {", ".join(missing_columns)}'}, 
                                status=status.HTTP_400_BAD_REQUEST)
             
-            # Process the data
             products_created = 0
             products_updated = 0
             errors = []
             
-            # Process each row individually without a transaction
-            # so errors in one row don't affect others
             for index, row in df.iterrows():
                 try:
-                    # Get image file by name
                     image_name = str(row['image_name']).strip()
                     image_file = image_files.get(image_name)
                     
@@ -329,25 +322,20 @@ class BulkProductUploadView(APIView):
                         continue
                     
 
-                    # Try to find an existing category with case-insensitive comparison
                     category_name = str(row['category'])
                     existing_category = Category.objects.filter(name__iexact=category_name).first()
                     if existing_category:
                         category = existing_category
                     else:
-                        # Create new category with the original casing from the sheet
                         category = Category.objects.create(name=category_name)
                     
-                    # Save image to media storage
                     image_path = f'media/product/{image_file.name}'
                     saved_path = default_storage.save(image_path, ContentFile(image_file.read()))
                     
-                    # Check if product with this name already exists
                     product_name = row['name']
                     existing_product = Product.objects.filter(name=product_name).first()
                     
                     if existing_product:
-                        # Update existing product
                         existing_product.price = float(row['price'])
                         existing_product.stock = int(row['stock'])
                         existing_product.category = category
@@ -356,7 +344,6 @@ class BulkProductUploadView(APIView):
                         existing_product.save()
                         products_updated += 1
                     else:
-                        # Create new product
                         Product.objects.create(
                             name=product_name,
                             price=float(row['price']),

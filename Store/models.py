@@ -19,9 +19,9 @@ class Address(models.Model):
 
 # Categories of Products
 class Category(models.Model):
-	name = models.CharField(max_length=100 , unique=True) # unique ensures that no categ can have the same name
+	name = models.CharField(max_length=100 , unique=True)
 	icon = models.ImageField(upload_to='media/category/')
-	description = models.CharField(max_length=250,blank=True, null=True) # charfield is for short txt like names , txtfield is for long txt like descrp
+	description = models.CharField(max_length=250,blank=True, null=True) 
 
 	def __str__(self):
 		return self.name
@@ -36,7 +36,7 @@ class Product(models.Model):
 	stock = models.PositiveIntegerField()
 
 	def __str__(self):
-		return self.name # here the name of the product that appears in dj admin pannel
+		return self.name
 
 # Orders
 class Order(models.Model):
@@ -45,14 +45,13 @@ class Order(models.Model):
 
     user = models.ForeignKey(Customer, on_delete=models.CASCADE , related_name='orders')
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, blank=True, default='pending')
-    total_price = models.DecimalField(max_digits=10, decimal_places=2) #Stores the total cost of all items in the order, this is the total price of the order before taxes and shipping fees are applied
-    address = models.ForeignKey(Address, on_delete=models.SET_NULL, null=True, blank=True) # the on_dele... ensures that the order won't be deleted id the addr is deleted
+    total_price = models.DecimalField(max_digits=10, decimal_places=2)
+    address = models.ForeignKey(Address, on_delete=models.SET_NULL, null=True, blank=True)
     payment_method = models.CharField(max_length=10, choices=PAYEMENT_CHOICES, default='cash')
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
 	    return f"Order {self.pk} - {self.user.username}"
-	# this is for readability in dj admin pannel
 
 class OrderItem(models.Model):
     order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name="items")

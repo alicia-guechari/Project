@@ -13,7 +13,7 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 from pathlib import Path
 from dotenv import load_dotenv
 import os
-import dj_database_url
+# import dj_database_url
 
 
 # Load environment variables
@@ -93,7 +93,7 @@ REST_AUTH = {
     'USER_DETAILS_SERIALIZER': 'Store.serializers.CustomUserDetailsSerializer',
     'PASSWORD_RESET_USE_SITES_DOMAIN' : True,
     'REGISTER_SERIALIZER': 'Store.serializers.CustomRegisterSerializer',
-    # 'LOGIN_SERIALIZER': 'Store.serializers.CustomLoginSerializer',
+    'LOGIN_SERIALIZER': 'Store.serializers.CustomLoginSerializer',
 }
 
 # AUTHENTICATION_BACKENDS = ['Store.serializers.PhoneBackend']
@@ -145,20 +145,20 @@ AUTH_USER_MODEL='Store.Customer'
 WSGI_APPLICATION = 'website.wsgi.application'
 
 
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.sqlite3',
-#         'NAME': BASE_DIR / 'db.sqlite3',
-#     }
-# }
-
 DATABASES = {
-    'default': dj_database_url.config(
-        default=os.getenv('DATABASE_URL'),  # or paste the string here directly
-        conn_max_age=600,
-        ssl_require=True  # Force SSL for Render connection
-    )
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
+    }
 }
+
+# DATABASES = {
+#     'default': dj_database_url.config(
+#         default=os.getenv('DATABASE_URL'),  # or paste the string here directly
+#         conn_max_age=600,
+#         ssl_require=True  # Force SSL for Render connection
+#     )
+# }
 
 
 
