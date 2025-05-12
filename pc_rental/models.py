@@ -43,24 +43,24 @@ class Rental(models.Model):
     def __str__(self):
         return f"{self.user} rented {self.pc}"
 
-class Review(models.Model):
-    customer = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    pc = models.ForeignKey(PC, on_delete=models.CASCADE, related_name="reviews")  
-    rating = models.PositiveSmallIntegerField(choices=[(i, str(i)) for i in range(1, 6)])
-    comment = models.TextField(blank=True, null=True) 
-    created_at = models.DateTimeField(auto_now_add=True) 
+# class Review(models.Model):
+#     customer = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+#     pc = models.ForeignKey(PC, on_delete=models.CASCADE, related_name="reviews")  
+#     rating = models.PositiveSmallIntegerField(choices=[(i, str(i)) for i in range(1, 6)])
+#     comment = models.TextField(blank=True, null=True) 
+#     created_at = models.DateTimeField(auto_now_add=True) 
 
-    def __str__(self):
-        return f"{self.customer} rated {self.pc} {self.rating}/5"
+#     def __str__(self):
+#         return f"{self.customer} rated {self.pc} {self.rating}/5"
 
-class ReviewLikeDislike(models.Model):
-    customer = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE) 
-    review = models.ForeignKey(Review, on_delete=models.CASCADE, related_name="likes_dislikes")
-    is_like = models.BooleanField()  
+# class ReviewLikeDislike(models.Model):
+#     customer = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE) 
+#     review = models.ForeignKey(Review, on_delete=models.CASCADE, related_name="likes_dislikes")
+#     is_like = models.BooleanField()  
 
-    class Meta:
-        unique_together = ("customer", "review")  
+#     class Meta:
+#         unique_together = ("customer", "review")  
 
-    def __str__(self):
-        return f"{self.customer} {'liked' if self.is_like else 'disliked'} {self.review}"
+#     def __str__(self):
+#         return f"{self.customer} {'liked' if self.is_like else 'disliked'} {self.review}"
 
